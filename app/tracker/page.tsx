@@ -1,0 +1,1334 @@
+﻿"use client";
+
+import { useEffect, useMemo, useState } from "react";
+
+type Transaction = {
+  id: number;
+  sourceRow: number | null;
+  date: string;
+  customer: string;
+  product: string;
+  distributor: string | null;
+  poNumber: string | null;
+  transactionType: string | null;
+  buyPrice: number;
+  sellPrice: number;
+  proratePrice: number | null;
+  quantity: number;
+  revenue: number;
+  profit: number;
+  margin: number;
+  invoiceStatus: string | null;
+  paymentStatus: string | null;
+  remarks: string | null;
+  subscriptionStart: string | null;
+  subscriptionEnd: string | null;
+  prorateDays: number | null;
+  periodLabel: string | null;
+};
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "-";
+
+  return new Date(value).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function getStatusClass(status: string | null) {
+  const value = status?.trim().toLowerCase();
+
+  if (value === "invoice sent") {
+    return "bg-green-50 text-green-700 ring-1 ring-green-200";
+  }
+
+  if (value === "need to send invoice") {
+    return "bg-orange-50 text-orange-700 ring-1 ring-orange-200";
+  }
+
+  if (value === "yes") {
+    return "bg-green-50 text-green-700 ring-1 ring-green-200";
+  }
+
+  if (value === "no") {
+    return "bg-red-50 text-red-700 ring-1 ring-red-200";
+  }
+
+  if (value === "not applicable") {
+    return "bg-gray-50 text-gray-600 ring-1 ring-gray-200";
+  }
+
+  return "bg-gray-50 text-gray-600 ring-1 ring-gray-200";
+}
+
+function getTransactionTypeClass(type: string | null) {
+  const value = type?.trim().toLowerCase();
+
+  if (value === "renewal") {
+    return "bg-purple-50 text-purple-700 ring-1 ring-purple-200";
+  }
+
+  if (value === "prorate") {
+    return "bg-amber-50 text-amber-700 ring-1 ring-amber-200";
+  }
+
+  if (value === "net new") {
+    return "bg-blue-50 text-blue-700 ring-1 ring-blue-200";
+  }
+
+  return "bg-gray-50 text-gray-600 ring-1 ring-gray-200";
+}
+
+export default function TrackerPage() {
+  /* ---------------------------------------------------------
+     USER / ROLE
+  ----------------------------------------------------------*/
+
+  const [userRole, setUserRole] = useState("");
+  const [checkingRole, setCheckingRole] = useState(true);
+
+  const canModifyTransactions =
+    userRole === "ADMIN" ||
+    userRole === "FINANCE" ||
+    userRole === "SALES";
+
+  /* ---------------------------------------------------------
+     TRANSACTIONS
+  ----------------------------------------------------------*/
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  /* ---------------------------------------------------------
+     FILTERS
+  ----------------------------------------------------------*/
+
+  const [search, setSearch] = useState("");
+  const [transactionType, setTransactionType] = useState("All");
+  const [invoiceStatus, setInvoiceStatus] = useState("All");
+  const [paymentStatus, setPaymentStatus] = useState("All");
+  const [distributor, setDistributor] = useState("All");
+
+  /* ---------------------------------------------------------
+     PAGINATION
+  ----------------------------------------------------------*/
+
+  const [page, setPage] = useState(1);
+  const pageSize = 15;
+
+  /* ---------------------------------------------------------
+     URL FILTERS
+  ----------------------------------------------------------*/
+
+  /*
+   * Allows View buttons from Customers, Products, Distributors,
+   * Invoices and Payments to open this page with the correct
+   * records already filtered.
+   */
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    const customerParam = params.get("customer");
+    const productParam = params.get("product");
+    const distributorParam = params.get("distributor");
+    const invoiceStatusParam = params.get("invoiceStatus");
+    const paymentStatusParam = params.get("paymentStatus");
+    const transactionTypeParam = params.get("transactionType");
+
+    if (customerParam) {
+      setSearch(customerParam);
+    } else if (productParam) {
+      setSearch(productParam);
+    }
+
+    if (distributorParam) {
+      setDistributor(distributorParam);
+    }
+
+    if (invoiceStatusParam) {
+      setInvoiceStatus(invoiceStatusParam);
+    }
+
+    if (paymentStatusParam) {
+      setPaymentStatus(paymentStatusParam);
+    }
+
+    if (transactionTypeParam) {
+      setTransactionType(transactionTypeParam);
+    }
+
+    setPage(1);
+  }, []);
+
+  /* ---------------------------------------------------------
+     SELECTED TRANSACTION
+  ----------------------------------------------------------*/
+
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
+
+  /* ---------------------------------------------------------
+     LOAD USER ROLE
+  ----------------------------------------------------------*/
+
+  useEffect(() => {
+    async function loadUserRole() {
+      try {
+        const response = await fetch("/api/auth/me", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          window.location.href = "/login";
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.user) {
+          setUserRole(data.user.role);
+        } else {
+          window.location.href = "/login";
+        }
+      } catch (error) {
+        console.error("Unable to load user role:", error);
+      } finally {
+        setCheckingRole(false);
+      }
+    }
+
+    loadUserRole();
+  }, []);
+
+  /* ---------------------------------------------------------
+     LOAD TRANSACTIONS
+  ----------------------------------------------------------*/
+
+  useEffect(() => {
+    async function loadTransactions() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch("/api/transactions", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to load transactions.");
+        }
+
+        const result = await response.json();
+
+        const rows = Array.isArray(result)
+          ? result
+          : result.transactions ?? result.data ?? [];
+
+        setTransactions(rows);
+      } catch (err) {
+        console.error(err);
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load transactions."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadTransactions();
+  }, []);
+
+  /* ---------------------------------------------------------
+     FILTER OPTIONS
+  ----------------------------------------------------------*/
+
+  const transactionTypes = useMemo(() => {
+    return [
+      "All",
+      ...Array.from(
+        new Set(
+          transactions
+            .map((item) => item.transactionType)
+            .filter(
+              (item): item is string => Boolean(item)
+            )
+        )
+      ).sort(),
+    ];
+  }, [transactions]);
+
+  const invoiceStatuses = useMemo(() => {
+    return [
+      "All",
+      ...Array.from(
+        new Set(
+          transactions
+            .map((item) => item.invoiceStatus)
+            .filter(
+              (item): item is string => Boolean(item)
+            )
+        )
+      ).sort(),
+    ];
+  }, [transactions]);
+
+  const paymentStatuses = useMemo(() => {
+    return [
+      "All",
+      ...Array.from(
+        new Set(
+          transactions
+            .map((item) => item.paymentStatus)
+            .filter(
+              (item): item is string => Boolean(item)
+            )
+        )
+      ).sort(),
+    ];
+  }, [transactions]);
+
+  const distributors = useMemo(() => {
+    return [
+      "All",
+      ...Array.from(
+        new Set(
+          transactions
+            .map((item) => item.distributor)
+            .filter(
+              (item): item is string => Boolean(item)
+            )
+        )
+      ).sort(),
+    ];
+  }, [transactions]);
+
+  /* ---------------------------------------------------------
+     FILTERING
+  ----------------------------------------------------------*/
+
+  const filteredTransactions = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return transactions.filter((item) => {
+      const matchesSearch =
+        !query ||
+        item.customer.toLowerCase().includes(query) ||
+        item.product.toLowerCase().includes(query) ||
+        (item.poNumber ?? "").toLowerCase().includes(query) ||
+        (item.distributor ?? "").toLowerCase().includes(query) ||
+        (item.remarks ?? "").toLowerCase().includes(query);
+
+      const matchesTransactionType =
+        transactionType === "All" ||
+        (item.transactionType ?? "") === transactionType;
+
+      const matchesInvoiceStatus =
+        invoiceStatus === "All" ||
+        (item.invoiceStatus ?? "") === invoiceStatus;
+
+      const matchesPaymentStatus =
+        paymentStatus === "All" ||
+        (item.paymentStatus ?? "") === paymentStatus;
+
+      const matchesDistributor =
+        distributor === "All" ||
+        (item.distributor ?? "") === distributor;
+
+      return (
+        matchesSearch &&
+        matchesTransactionType &&
+        matchesInvoiceStatus &&
+        matchesPaymentStatus &&
+        matchesDistributor
+      );
+    });
+  }, [
+    transactions,
+    search,
+    transactionType,
+    invoiceStatus,
+    paymentStatus,
+    distributor,
+  ]);
+
+  /* ---------------------------------------------------------
+     PAGINATION
+  ----------------------------------------------------------*/
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredTransactions.length / pageSize)
+  );
+
+  const currentPage = Math.min(page, totalPages);
+
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  /* ---------------------------------------------------------
+     SUMMARY VALUES
+  ----------------------------------------------------------*/
+
+  const totalQuantity = filteredTransactions.reduce(
+    (sum, item) => sum + Number(item.quantity || 0),
+    0
+  );
+
+  /* ---------------------------------------------------------
+     RESET FILTERS
+  ----------------------------------------------------------*/
+
+  function resetFilters() {
+    setSearch("");
+    setTransactionType("All");
+    setInvoiceStatus("All");
+    setPaymentStatus("All");
+    setDistributor("All");
+    setPage(1);
+  }
+
+  /* ---------------------------------------------------------
+     ROLE CHECKING
+  ----------------------------------------------------------*/
+
+  if (checkingRole) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="flex min-h-[calc(100vh-76px)] items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+
+            <p className="mt-4 text-sm font-medium text-gray-500">
+              Loading...
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  /* ---------------------------------------------------------
+     PAGE
+  ----------------------------------------------------------*/
+
+  return (
+    <main className="min-h-screen bg-gray-50">
+      <div className="mx-auto max-w-[1800px] px-6 py-6">
+
+        {/* ---------------------------------------------------
+            PAGE HEADER
+        ---------------------------------------------------- */}
+
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+              <span className="h-2 w-2 rounded-full bg-blue-600" />
+              CSP Management
+            </div>
+
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">
+              CSP Tracker
+            </h1>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Manage and review all CSP transactions.
+            </p>
+          </div>
+
+          {/* Add Transaction - Write roles only */}
+
+          {canModifyTransactions && (
+            <a
+              href="/tracker/add"
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md"
+            >
+              + Add Transaction
+            </a>
+          )}
+        </div>
+
+        {/* ---------------------------------------------------
+            ERROR
+        ---------------------------------------------------- */}
+
+        {error && (
+          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+            {error}
+          </div>
+        )}
+
+        {/* ---------------------------------------------------
+            SUMMARY
+        ---------------------------------------------------- */}
+
+        <div className="mb-6">
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-gray-500">
+              Quantity
+              </p>
+              <span className="rounded-lg bg-violet-50 px-2.5 py-1.5 text-xs font-bold text-violet-700">
+                #
+              </span>
+            </div>
+
+            <p className="mt-3 text-3xl font-bold tracking-tight text-gray-950">
+              {totalQuantity.toLocaleString("en-IN")}
+            </p>
+
+            <p className="mt-1 text-xs text-gray-500">
+              Total license/service quantity
+            </p>
+          </div>
+        </div>
+
+        {/* ---------------------------------------------------
+            FILTERS
+        ---------------------------------------------------- */}
+
+        <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-sm font-bold text-blue-700">
+                  ⌕
+                </span>
+                <div>
+                  <h2 className="font-bold text-gray-950">
+                    Search & Filters
+                  </h2>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Search across customers, products, PO numbers,
+                    distributors and remarks.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 hover:text-blue-800"
+            >
+              Reset Filters
+            </button>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-5">
+
+            {/* Search */}
+
+            <div className="xl:col-span-1">
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                Search
+              </label>
+
+              <input
+                type="text"
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setPage(1);
+                }}
+                placeholder="Customer, PO, product..."
+                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+              />
+            </div>
+
+            {/* Transaction Type */}
+
+            <div>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                Transaction Type
+              </label>
+
+              <select
+                value={transactionType}
+                onChange={(event) => {
+                  setTransactionType(event.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+              >
+                {transactionTypes.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Invoice */}
+
+            <div>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                Invoice Status
+              </label>
+
+              <select
+                value={invoiceStatus}
+                onChange={(event) => {
+                  setInvoiceStatus(event.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+              >
+                {invoiceStatuses.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Payment */}
+
+            <div>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                Payment Status
+              </label>
+
+              <select
+                value={paymentStatus}
+                onChange={(event) => {
+                  setPaymentStatus(event.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+              >
+                {paymentStatuses.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Distributor */}
+
+            <div>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+                Distributor
+              </label>
+
+              <select
+                value={distributor}
+                onChange={(event) => {
+                  setDistributor(event.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+              >
+                {distributors.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------
+            MAIN TRACKER TABLE
+        ---------------------------------------------------- */}
+
+        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+
+          <div className="flex flex-col gap-3 border-b border-gray-200 p-5 md:flex-row md:items-center md:justify-between">
+
+            <div>
+              <h2 className="text-base font-bold tracking-tight text-gray-950">
+                Transaction Records
+              </h2>
+
+              <p className="mt-1 text-xs text-gray-500">
+                Showing {paginatedTransactions.length} of{" "}
+                {filteredTransactions.length} matching records
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-gray-50 px-3 py-2 text-xs font-medium text-gray-500">
+              {filteredTransactions.length} record{filteredTransactions.length === 1 ? "" : "s"} found
+            </div>
+          </div>
+
+          {/* Loading */}
+
+          {loading ? (
+            <div className="flex min-h-[400px] items-center justify-center bg-gray-50/40">
+              <div className="text-center">
+                <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+
+                <p className="text-sm text-gray-500">
+                  Loading transactions...
+                </p>
+              </div>
+            </div>
+          ) : paginatedTransactions.length === 0 ? (
+            <div className="p-14 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-lg text-gray-500">
+                ⌕
+              </div>
+              <p className="mt-4 font-semibold text-gray-800">
+                No transactions found.
+              </p>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Try changing your search or filters.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[2600px] border-collapse">
+
+                {/* Table Header */}
+
+                <thead>
+                  <tr className="bg-gray-50/95">
+
+                    <th className="sticky left-0 z-20 border-b border-r border-gray-200 bg-gray-50 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      SL
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Date Loaded
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Customer Company Name
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      PO Number
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Transaction Type
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      License Description
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Buy Price
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Sell Price
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Prorate Price
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Prorate Days
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Prorate Period
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Qty
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Total Revenue
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      P/L
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Margin %
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Distributor
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Invoice Status
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Payment Received
+                    </th>
+
+                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Remarks
+                    </th>
+
+                    <th className="sticky right-0 z-20 border-b border-l border-gray-200 bg-gray-50 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-gray-500">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+
+                {/* Table Body */}
+
+                <tbody className="divide-y divide-gray-100">
+
+                  {paginatedTransactions.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      className="group transition hover:bg-blue-50/40"
+                    >
+
+                      {/* SL */}
+
+                      <td className="sticky left-0 z-10 whitespace-nowrap border-r border-gray-100 bg-white px-4 py-4 text-sm font-semibold text-gray-700 group-hover:bg-blue-50/40">
+                        {(currentPage - 1) * pageSize +
+                          index +
+                          1}
+                      </td>
+
+                      {/* Date */}
+
+                      <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-700">
+                        {formatDate(item.date)}
+                      </td>
+
+                      {/* Customer */}
+
+                      <td className="px-4 py-4">
+                        <p className="max-w-[220px] truncate text-sm font-semibold text-gray-900">
+                          {item.customer}
+                        </p>
+                      </td>
+
+                      {/* PO */}
+
+                      <td className="px-4 py-4 text-sm text-gray-700">
+                        {item.poNumber || "-"}
+                      </td>
+
+                      {/* Type */}
+
+                      <td className="px-4 py-4">
+                        <span
+                          className={`whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-bold ${getTransactionTypeClass(
+                            item.transactionType
+                          )}`}
+                        >
+                          {item.transactionType || "Not Set"}
+                        </span>
+                      </td>
+
+                      {/* Product */}
+
+                      <td className="px-4 py-4">
+                        <p className="max-w-[300px] truncate text-sm text-gray-800">
+                          {item.product}
+                        </p>
+                      </td>
+
+                      {/* Buy */}
+
+                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm text-gray-700">
+                        {formatCurrency(item.buyPrice)}
+                      </td>
+
+                      {/* Sell */}
+
+                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-medium text-gray-900">
+                        {formatCurrency(item.sellPrice)}
+                      </td>
+
+                      {/* Prorate */}
+
+                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm text-gray-700">
+                        {item.proratePrice !== null
+                          ? formatCurrency(item.proratePrice)
+                          : "-"}
+                      </td>
+
+                      {/* Days */}
+
+                      <td className="px-4 py-4 text-center text-sm text-gray-700">
+                        {item.prorateDays ?? "-"}
+                      </td>
+
+                      {/* Period */}
+
+                      <td className="px-4 py-4 text-sm text-gray-700">
+                        {item.periodLabel || "-"}
+                      </td>
+
+                      {/* Quantity */}
+
+                      <td className="px-4 py-4 text-center text-sm font-semibold text-gray-900">
+                        {item.quantity}
+                      </td>
+
+                      {/* Revenue */}
+
+                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-bold text-blue-700">
+                        {formatCurrency(item.revenue)}
+                      </td>
+
+                      {/* Profit */}
+
+                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-bold text-green-700">
+                        {formatCurrency(item.profit)}
+                      </td>
+
+                      {/* Margin */}
+
+                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-semibold text-gray-900">
+                        {Number(item.margin || 0).toFixed(2)}%
+                      </td>
+
+                      {/* Distributor */}
+
+                      <td className="px-4 py-4 text-sm text-gray-700">
+                        {item.distributor || "Not Assigned"}
+                      </td>
+
+                      {/* Invoice */}
+
+                      <td className="px-4 py-4">
+                        <span
+                          className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(
+                            item.invoiceStatus
+                          )}`}
+                        >
+                          {item.invoiceStatus || "Not Set"}
+                        </span>
+                      </td>
+
+                      {/* Payment */}
+
+                      <td className="px-4 py-4">
+                        <span
+                          className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(
+                            item.paymentStatus
+                          )}`}
+                        >
+                          {item.paymentStatus || "Not Set"}
+                        </span>
+                      </td>
+
+                      {/* Remarks */}
+
+                      <td className="px-4 py-4">
+                        <p
+                          title={item.remarks || ""}
+                          className="max-w-[280px] truncate text-sm text-gray-600"
+                        >
+                          {item.remarks || "-"}
+                        </p>
+                      </td>
+
+                      {/* Actions */}
+
+                      <td className="sticky right-0 z-10 border-l border-gray-100 bg-white px-4 py-4 text-center group-hover:bg-blue-50/40">
+                        <div className="flex items-center justify-center gap-2">
+
+                          {/* View - Everyone */}
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedTransaction(item)
+                            }
+                            className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-100"
+                          >
+                            View
+                          </button>
+
+                          {/* Edit - Write roles only */}
+
+                          {canModifyTransactions && (
+                            <a
+                              href={`/tracker/${item.id}/edit`}
+                              className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
+                            >
+                              Edit
+                            </a>
+                          )}
+
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* -------------------------------------------------
+              PAGINATION
+          -------------------------------------------------- */}
+
+          {!loading &&
+            filteredTransactions.length > 0 && (
+              <div className="flex flex-col gap-3 border-t border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+
+                <p className="text-sm text-gray-500">
+                  Page {currentPage} of {totalPages}
+                </p>
+
+                <div className="flex items-center gap-2">
+
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() =>
+                      setPage((value) =>
+                        Math.max(1, value - 1)
+                      )
+                    }
+                    className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Previous
+                  </button>
+
+                  <div className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white">
+                    {currentPage}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                      setPage((value) =>
+                        Math.min(totalPages, value + 1)
+                      )
+                    }
+                    className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+
+                </div>
+              </div>
+            )}
+
+        </section>
+      </div>
+
+      {/* -----------------------------------------------------
+          VIEW TRANSACTION MODAL
+      ------------------------------------------------------ */}
+
+      {selectedTransaction && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm"
+          onClick={() => setSelectedTransaction(null)}
+        >
+          <div
+            className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+
+            {/* Modal Header */}
+
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white/95 px-6 py-5 backdrop-blur">
+
+              <div>
+                <h2 className="text-xl font-bold text-gray-950">
+                  Transaction Details
+                </h2>
+
+                <p className="mt-1 text-xs text-gray-500">
+                  Record #{selectedTransaction.id}
+                  {selectedTransaction.sourceRow
+                    ? ` • Excel Row ${selectedTransaction.sourceRow}`
+                    : ""}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedTransaction(null)}
+                className="rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                Close
+              </button>
+
+            </div>
+
+            {/* Modal Details */}
+
+            <div className="grid gap-6 p-6 md:grid-cols-2">
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Customer Company Name
+                </p>
+
+                <p className="mt-1 font-semibold text-gray-900">
+                  {selectedTransaction.customer}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Date Loaded
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {formatDate(selectedTransaction.date)}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  PO Number
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {selectedTransaction.poNumber || "-"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Transaction Type
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {selectedTransaction.transactionType ||
+                    "Not Set"}
+                </p>
+              </div>
+
+              <div className="md:col-span-2">
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  License Description
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {selectedTransaction.product}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Buy Price
+                </p>
+
+                <p className="mt-1 font-semibold text-gray-900">
+                  {formatCurrency(
+                    selectedTransaction.buyPrice
+                  )}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Sell Price
+                </p>
+
+                <p className="mt-1 font-semibold text-gray-900">
+                  {formatCurrency(
+                    selectedTransaction.sellPrice
+                  )}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Prorate Price
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {selectedTransaction.proratePrice !== null
+                    ? formatCurrency(
+                        selectedTransaction.proratePrice
+                      )
+                    : "-"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Quantity
+                </p>
+
+                <p className="mt-1 font-semibold text-gray-900">
+                  {selectedTransaction.quantity}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Total Revenue
+                </p>
+
+                <p className="mt-1 font-bold text-blue-700">
+                  {formatCurrency(
+                    selectedTransaction.revenue
+                  )}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  P/L
+                </p>
+
+                <p className="mt-1 font-bold text-green-700">
+                  {formatCurrency(
+                    selectedTransaction.profit
+                  )}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Margin %
+                </p>
+
+                <p className="mt-1 font-bold text-gray-900">
+                  {Number(
+                    selectedTransaction.margin || 0
+                  ).toFixed(2)}
+                  %
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Distributor
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {selectedTransaction.distributor ||
+                    "Not Assigned"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Prorate Days
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {selectedTransaction.prorateDays ?? "-"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Prorate Period
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {selectedTransaction.periodLabel || "-"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Subscription Start
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {formatDate(
+                    selectedTransaction.subscriptionStart
+                  )}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Subscription End
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {formatDate(
+                    selectedTransaction.subscriptionEnd
+                  )}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Invoice Status
+                </p>
+
+                <div className="mt-2">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(
+                      selectedTransaction.invoiceStatus
+                    )}`}
+                  >
+                    {selectedTransaction.invoiceStatus ||
+                      "Not Set"}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Payment Received
+                </p>
+
+                <div className="mt-2">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(
+                      selectedTransaction.paymentStatus
+                    )}`}
+                  >
+                    {selectedTransaction.paymentStatus ||
+                      "Not Set"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                  Remarks
+                </p>
+
+                <div className="mt-2 rounded-lg bg-gray-50 p-4 text-sm leading-6 text-gray-700">
+                  {selectedTransaction.remarks || "No remarks"}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+
+            <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 text-right">
+              <button
+                type="button"
+                onClick={() => setSelectedTransaction(null)}
+                className="rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
