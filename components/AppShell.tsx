@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import ThemeProvider from "@/components/ThemeProvider";
 
 export default function AppShell({
   children,
@@ -16,16 +17,18 @@ export default function AppShell({
   }
 
   return (
-    <>
-      <Sidebar />
+    <ThemeProvider>
+      <div className="min-h-screen bg-[var(--theme-page)]">
+        <Sidebar />
 
-      <div className="ml-64 min-h-screen bg-white">
-        <Header />
+        <div className="ml-72 min-h-screen">
+          <Header />
 
-        <main className="min-h-[calc(100vh-76px)] bg-white">
-          {children}
-        </main>
+          <main className="min-h-[calc(100vh-78px)] bg-transparent">
+            {children}
+          </main>
+        </div>
       </div>
-    </>
+    </ThemeProvider>
   );
 }

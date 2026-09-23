@@ -430,12 +430,12 @@ export default function ReportsPage() {
   ].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-gray-50/70 px-4 py-6 text-gray-950 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f8f7f4] px-4 py-6 text-gray-950 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1800px]">
         {/* Header */}
-        <div className="mb-7 flex flex-col gap-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+        <div className="mb-7 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-blue-600">
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-amber-600">
               <span className="h-2 w-2 rounded-full bg-blue-600" />
               Analytics
               <span className="text-gray-300">/</span>
@@ -458,7 +458,7 @@ export default function ReportsPage() {
                 type="button"
                 onClick={generatePDF}
                 disabled={!report || loading}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <DocumentIcon />
                 Generate PDF
@@ -469,7 +469,7 @@ export default function ReportsPage() {
               type="button"
               onClick={() => loadReport()}
               disabled={loading}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <RefreshIcon />
               Refresh Report
@@ -478,7 +478,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Filters */}
-        <div className="mb-7 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="mb-7 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-base font-bold">
@@ -501,7 +501,7 @@ export default function ReportsPage() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-gray-500 transition hover:bg-gray-50 hover:text-blue-600"
+                className="text-xs font-bold text-gray-500 transition hover:text-amber-600"
               >
                 Clear
               </button>
@@ -598,7 +598,7 @@ export default function ReportsPage() {
             <button
               type="button"
               onClick={applyFilters}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-bold text-white transition hover:bg-blue-700"
             >
               <FilterIcon />
               Apply Filters
@@ -613,7 +613,7 @@ export default function ReportsPage() {
         ) : (
           <>
             {/* Summary */}
-            <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="mb-7 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
               <MetricCard
                 title="Transactions"
                 value={report.summary.transactionCount.toLocaleString(
@@ -621,7 +621,7 @@ export default function ReportsPage() {
                 )}
                 subtitle="Transactions in report"
                 icon={<DocumentIcon />}
-                iconClass="bg-blue-50 text-blue-600"
+                iconClass="bg-blue-50 text-amber-600"
               />
 
               <MetricCard
@@ -694,7 +694,7 @@ export default function ReportsPage() {
                               </span>
                             </div>
 
-                            <span className="shrink-0 text-sm font-bold text-gray-900">
+                            <span className="shrink-0 text-sm font-bold text-slate-900">
                               {formatCompactCurrency(item.revenue)}
                             </span>
                           </div>
@@ -753,7 +753,7 @@ export default function ReportsPage() {
                               </span>
                             </div>
 
-                            <span className="shrink-0 text-sm font-bold text-gray-900">
+                            <span className="shrink-0 text-sm font-bold text-slate-900">
                               {formatCompactCurrency(item.revenue)}
                             </span>
                           </div>
@@ -794,17 +794,17 @@ export default function ReportsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[600px]">
                     <thead>
-                      <tr className="border-b border-gray-100 text-left">
-                        <th className="px-2 py-3 text-xs font-bold uppercase tracking-wide text-gray-400">
+                      <tr className="border-b border-slate-100 text-left">
+                        <th className="px-2 py-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                           Status
                         </th>
-                        <th className="px-2 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                        <th className="px-2 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                           Records
                         </th>
-                        <th className="px-2 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                        <th className="px-2 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                           Revenue
                         </th>
-                        <th className="px-2 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                        <th className="px-2 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                           P/L
                         </th>
                       </tr>
@@ -814,7 +814,7 @@ export default function ReportsPage() {
                       {report.invoiceStatusSummary.map((item) => (
                         <tr
                           key={item.invoiceStatus}
-                          className="border-b border-gray-100 transition hover:bg-blue-50/30"
+                          className="border-b border-gray-50"
                         >
                           <td className="px-2 py-3 text-sm font-semibold text-gray-700">
                             <span className="inline-flex items-center gap-2">
@@ -849,17 +849,17 @@ export default function ReportsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[600px]">
                     <thead>
-                      <tr className="border-b border-gray-100 text-left">
-                        <th className="px-2 py-3 text-xs font-bold uppercase tracking-wide text-gray-400">
+                      <tr className="border-b border-slate-100 text-left">
+                        <th className="px-2 py-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                           Type
                         </th>
-                        <th className="px-2 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                        <th className="px-2 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                           Records
                         </th>
-                        <th className="px-2 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                        <th className="px-2 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                           Revenue
                         </th>
-                        <th className="px-2 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                        <th className="px-2 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-400">
                           P/L
                         </th>
                       </tr>
@@ -869,7 +869,7 @@ export default function ReportsPage() {
                       {report.transactionTypeSummary.map((item) => (
                         <tr
                           key={item.transactionType}
-                          className="border-b border-gray-100 transition hover:bg-blue-50/30"
+                          className="border-b border-gray-50"
                         >
                           <td className="px-2 py-3 text-sm font-semibold text-gray-700">
                             {item.transactionType}
@@ -895,8 +895,8 @@ export default function ReportsPage() {
             </div>
 
             {/* Date Summary */}
-            <div className="mb-7 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="border-b border-gray-100 px-5 py-5 sm:px-6">
+            <div className="mb-7 rounded-2xl border border-gray-200 bg-white shadow-sm">
+              <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
                 <h2 className="text-lg font-bold">
                   Date-wise Summary
                 </h2>
@@ -909,28 +909,28 @@ export default function ReportsPage() {
               <div className="overflow-x-auto">
                 <table className="min-w-[800px] w-full">
                   <thead>
-                    <tr className="border-b border-gray-200 bg-gray-50/90">
-                      <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <tr className="border-b border-slate-100 bg-[#fafaf8]/70">
+                      <th className="px-5 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Date
                       </th>
 
-                      <th className="px-5 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-5 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Transactions
                       </th>
 
-                      <th className="px-5 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-5 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Quantity
                       </th>
 
-                      <th className="px-5 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-5 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Revenue
                       </th>
 
-                      <th className="px-5 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-5 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         P/L
                       </th>
 
-                      <th className="px-5 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-5 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Margin
                       </th>
                     </tr>
@@ -940,7 +940,7 @@ export default function ReportsPage() {
                     {report.dateSummary.map((item) => (
                       <tr
                         key={item.date}
-                        className="border-b border-gray-100 transition hover:bg-blue-50/30"
+                        className="border-b border-slate-100 transition hover:bg-blue-50/30"
                       >
                         <td className="px-5 py-3.5 text-sm font-semibold text-gray-800">
                           {formatDate(item.date)}
@@ -954,7 +954,7 @@ export default function ReportsPage() {
                           {item.quantity.toLocaleString("en-IN")}
                         </td>
 
-                        <td className="px-5 py-3.5 text-right text-sm font-bold text-gray-900">
+                        <td className="px-5 py-3.5 text-right text-sm font-bold text-slate-900">
                           {formatCurrency(item.revenue)}
                         </td>
 
@@ -974,7 +974,7 @@ export default function ReportsPage() {
 
             {/* Detailed Report */}
             <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex flex-col gap-4 border-b border-gray-100 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <h2 className="text-lg font-bold">
                     Detailed Transaction Report
@@ -986,7 +986,7 @@ export default function ReportsPage() {
                   </p>
                 </div>
 
-                <div className="rounded-xl bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600 ring-1 ring-gray-200">
+                <div className="rounded-lg bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600">
                   {report.transactions.length} records
                 </div>
               </div>
@@ -994,52 +994,52 @@ export default function ReportsPage() {
               <div className="overflow-x-auto">
                 <table className="min-w-[1600px] w-full">
                   <thead>
-                    <tr className="border-b border-gray-200 bg-gray-50/90">
-                      <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <tr className="border-b border-slate-100 bg-[#fafaf8]/70">
+                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Date
                       </th>
 
-                      <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Customer
                       </th>
 
-                      <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Product
                       </th>
 
-                      <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         PO Number
                       </th>
 
-                      <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Distributor
                       </th>
 
-                      <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Type
                       </th>
 
-                      <th className="px-4 py-4 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Qty
                       </th>
 
-                      <th className="px-4 py-4 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Revenue
                       </th>
 
-                      <th className="px-4 py-4 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         P/L
                       </th>
 
-                      <th className="px-4 py-4 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Margin
                       </th>
 
-                      <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Invoice
                       </th>
 
-                      <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Payment
                       </th>
                     </tr>
@@ -1049,7 +1049,7 @@ export default function ReportsPage() {
                     {report.transactions.map((item) => (
                       <tr
                         key={item.id}
-                        className="border-b border-gray-100 transition hover:bg-blue-50/30"
+                        className="border-b border-slate-100 transition hover:bg-blue-50/30"
                       >
                         <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-600">
                           {formatDate(item.date)}
@@ -1057,7 +1057,7 @@ export default function ReportsPage() {
 
                         <td className="max-w-[220px] px-4 py-4">
                           <div
-                            className="truncate text-sm font-bold text-gray-900"
+                            className="truncate text-sm font-bold text-slate-900"
                             title={item.customer}
                           >
                             {item.customer}
@@ -1089,7 +1089,7 @@ export default function ReportsPage() {
                           {item.quantity.toLocaleString("en-IN")}
                         </td>
 
-                        <td className="px-4 py-4 text-right text-sm font-bold text-gray-900">
+                        <td className="px-4 py-4 text-right text-sm font-bold text-slate-900">
                           {formatCurrency(item.revenue)}
                         </td>
 
@@ -1123,8 +1123,8 @@ export default function ReportsPage() {
           height: 44px;
           width: 100%;
           border-radius: 12px;
-          border: 1px solid #d1d5db;
-          background: white;
+          border: 1px solid #e5e7eb;
+          background: #f9fafb;
           padding: 0 12px;
           font-size: 14px;
           font-weight: 500;
@@ -1133,7 +1133,7 @@ export default function ReportsPage() {
         }
 
         .report-input:focus {
-          border-color: #3b82f6;
+          border-color: #60a5fa;
           background: white;
           box-shadow: 0 0 0 4px #eff6ff;
         }
@@ -1160,25 +1160,21 @@ function MetricCard({
   iconClass: string;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-wide text-gray-400">
-            {title}
-          </p>
+    <div className="group flex min-h-[100px] items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-3.5 shadow-[0_5px_18px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(15,23,42,0.07)]">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconClass} ring-1 transition-transform duration-200 group-hover:scale-105`}>
+        {icon}
+      </div>
 
-          <p className="mt-3 truncate text-2xl font-bold tracking-tight text-gray-950">
-            {value}
-          </p>
-
-          <p className="mt-1 text-xs text-gray-400">{subtitle}</p>
-        </div>
-
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconClass}`}
-        >
-          {icon}
-        </div>
+      <div className="min-w-0">
+        <p className="whitespace-nowrap text-[10px] font-extrabold uppercase tracking-[0.06em] text-slate-400">
+          {title}
+        </p>
+        <p className="mt-1 whitespace-nowrap text-xl font-black tracking-tight text-slate-950">
+          {value}
+        </p>
+        <p className="mt-0.5 whitespace-nowrap text-[11px] font-medium text-slate-400">
+          {subtitle}
+        </p>
       </div>
     </div>
   );
@@ -1194,7 +1190,7 @@ function ReportCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] sm:p-6">
       <div className="mb-6">
         <h2 className="text-lg font-bold text-gray-950">{title}</h2>
 
@@ -1262,7 +1258,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className="mt-5 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-blue-700"
+        className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#f59e0b] px-4 text-sm font-extrabold text-white shadow-[0_6px_16px_rgba(245,158,11,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#d97706] hover:shadow-[0_8px_20px_rgba(245,158,11,0.23)] hover:bg-blue-700"
       >
         Try Again
       </button>

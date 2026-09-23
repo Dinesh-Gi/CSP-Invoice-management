@@ -49,44 +49,45 @@ function getStatusClass(status: string | null) {
   const value = status?.trim().toLowerCase();
 
   if (value === "invoice sent") {
-    return "bg-green-50 text-green-700 ring-1 ring-green-200";
+    return "bg-green-100 text-green-700";
   }
 
   if (value === "need to send invoice") {
-    return "bg-orange-50 text-orange-700 ring-1 ring-orange-200";
+    return "bg-orange-100 text-orange-700";
   }
 
   if (value === "yes") {
-    return "bg-green-50 text-green-700 ring-1 ring-green-200";
+    return "bg-green-100 text-green-700";
   }
 
   if (value === "no") {
-    return "bg-red-50 text-red-700 ring-1 ring-red-200";
+    return "bg-red-100 text-red-700";
   }
 
   if (value === "not applicable") {
-    return "bg-gray-50 text-gray-600 ring-1 ring-gray-200";
+    return "bg-gray-100 text-gray-700";
   }
 
-  return "bg-gray-50 text-gray-600 ring-1 ring-gray-200";
+  return "bg-gray-100 text-gray-600";
 }
 
-function getTransactionTypeClass(type: string | null) {
-  const value = type?.trim().toLowerCase();
-
-  if (value === "renewal") {
-    return "bg-purple-50 text-purple-700 ring-1 ring-purple-200";
-  }
-
-  if (value === "prorate") {
-    return "bg-amber-50 text-amber-700 ring-1 ring-amber-200";
-  }
-
-  if (value === "net new") {
-    return "bg-blue-50 text-blue-700 ring-1 ring-blue-200";
-  }
-
-  return "bg-gray-50 text-gray-600 ring-1 ring-gray-200";
+function QuantityIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M8 4h8M6 7h12M5 20h14V9H5z" />
+      <path d="M8 12h8M8 15h5" />
+    </svg>
+  );
 }
 
 export default function TrackerPage() {
@@ -387,6 +388,16 @@ export default function TrackerPage() {
      SUMMARY VALUES
   ----------------------------------------------------------*/
 
+  const totalRevenue = filteredTransactions.reduce(
+    (sum, item) => sum + Number(item.revenue || 0),
+    0
+  );
+
+  const totalProfit = filteredTransactions.reduce(
+    (sum, item) => sum + Number(item.profit || 0),
+    0
+  );
+
   const totalQuantity = filteredTransactions.reduce(
     (sum, item) => sum + Number(item.quantity || 0),
     0
@@ -411,10 +422,10 @@ export default function TrackerPage() {
 
   if (checkingRole) {
     return (
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-[#f8f7f3]">
         <div className="flex min-h-[calc(100vh-76px)] items-center justify-center">
           <div className="text-center">
-            <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+            <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-gray-200 border-t-amber-500" />
 
             <p className="mt-4 text-sm font-medium text-gray-500">
               Loading...
@@ -430,37 +441,27 @@ export default function TrackerPage() {
   ----------------------------------------------------------*/
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-[1800px] px-6 py-6">
+    <main className="min-h-screen bg-[#f8f7f3]">
+      <div className="mx-auto max-w-[1800px] px-5 py-5 sm:px-6 lg:px-8">
 
         {/* ---------------------------------------------------
             PAGE HEADER
         ---------------------------------------------------- */}
 
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-              <span className="h-2 w-2 rounded-full bg-blue-600" />
-              CSP Management
-            </div>
-
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">
-              CSP Tracker
-            </h1>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Manage and review all CSP transactions.
+            <p className="text-xs font-semibold text-slate-500">
+              {filteredTransactions.length.toLocaleString("en-IN")} matching records
             </p>
           </div>
-
-          {/* Add Transaction - Write roles only */}
 
           {canModifyTransactions && (
             <a
               href="/tracker/add"
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md"
+              className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(245,158,11,0.22)] transition hover:-translate-y-px hover:bg-amber-600"
             >
-              + Add Transaction
+              <span className="text-base leading-none">+</span>
+              Add Transaction
             </a>
           )}
         </div>
@@ -475,59 +476,54 @@ export default function TrackerPage() {
           </div>
         )}
 
-        {/* ---------------------------------------------------
-            SUMMARY
-        ---------------------------------------------------- */}
-
-        <div className="mb-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-500">
-              Quantity
-              </p>
-              <span className="rounded-lg bg-violet-50 px-2.5 py-1.5 text-xs font-bold text-violet-700">
-                #
-              </span>
+        {/* Compact Quantity Summary */}
+        <section className="mb-5 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_6px_22px_rgba(15,23,42,0.04)]">
+          <div className="flex min-h-[86px] items-center gap-3 px-5 py-3.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-amber-100">
+              <QuantityIcon />
             </div>
 
-            <p className="mt-3 text-3xl font-bold tracking-tight text-gray-950">
-              {totalQuantity.toLocaleString("en-IN")}
-            </p>
+            <div className="flex min-w-0 items-center gap-3 sm:gap-5">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-slate-400">
+                  Quantity
+                </p>
+                <p className="mt-0.5 text-2xl font-black tracking-tight text-slate-950">
+                  {totalQuantity.toLocaleString("en-IN")}
+                </p>
+              </div>
 
-            <p className="mt-1 text-xs text-gray-500">
-              Total license/service quantity
-            </p>
+              <div className="hidden h-8 w-px bg-slate-200 sm:block" />
+
+              <p className="hidden text-xs font-medium text-slate-500 sm:block">
+                Total license / service quantity for the current filters
+              </p>
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* ---------------------------------------------------
             FILTERS
         ---------------------------------------------------- */}
 
-        <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <section className="mb-5 rounded-2xl border border-slate-200/80 bg-white p-4.5 shadow-[0_6px_22px_rgba(15,23,42,0.04)]">
 
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-sm font-bold text-blue-700">
-                  ⌕
-                </span>
-                <div>
-                  <h2 className="font-bold text-gray-950">
-                    Search & Filters
-                  </h2>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Search across customers, products, PO numbers,
-                    distributors and remarks.
-                  </p>
-                </div>
-              </div>
+              <h2 className="text-base font-extrabold tracking-tight text-slate-950">
+                Search & Filters
+              </h2>
+
+              <p className="mt-1 text-[11px] font-medium text-slate-500">
+                Search across customers, products, PO numbers,
+                distributors and remarks.
+              </p>
             </div>
 
             <button
               type="button"
               onClick={resetFilters}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 hover:text-blue-800"
+              className="zeit-btn zeit-btn-secondary min-h-9 h-9 px-3 text-xs text-blue-700"
             >
               Reset Filters
             </button>
@@ -538,7 +534,7 @@ export default function TrackerPage() {
             {/* Search */}
 
             <div className="xl:col-span-1">
-              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+              <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                 Search
               </label>
 
@@ -550,14 +546,14 @@ export default function TrackerPage() {
                   setPage(1);
                 }}
                 placeholder="Customer, PO, product..."
-                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="zeit-input h-10 text-sm"
               />
             </div>
 
             {/* Transaction Type */}
 
             <div>
-              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+              <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                 Transaction Type
               </label>
 
@@ -567,7 +563,7 @@ export default function TrackerPage() {
                   setTransactionType(event.target.value);
                   setPage(1);
                 }}
-                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="zeit-input h-10 text-sm"
               >
                 {transactionTypes.map((item) => (
                   <option key={item} value={item}>
@@ -580,7 +576,7 @@ export default function TrackerPage() {
             {/* Invoice */}
 
             <div>
-              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+              <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                 Invoice Status
               </label>
 
@@ -590,7 +586,7 @@ export default function TrackerPage() {
                   setInvoiceStatus(event.target.value);
                   setPage(1);
                 }}
-                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="zeit-input h-10 text-sm"
               >
                 {invoiceStatuses.map((item) => (
                   <option key={item} value={item}>
@@ -603,7 +599,7 @@ export default function TrackerPage() {
             {/* Payment */}
 
             <div>
-              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+              <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                 Payment Status
               </label>
 
@@ -613,7 +609,7 @@ export default function TrackerPage() {
                   setPaymentStatus(event.target.value);
                   setPage(1);
                 }}
-                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="zeit-input h-10 text-sm"
               >
                 {paymentStatuses.map((item) => (
                   <option key={item} value={item}>
@@ -626,7 +622,7 @@ export default function TrackerPage() {
             {/* Distributor */}
 
             <div>
-              <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-500">
+              <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                 Distributor
               </label>
 
@@ -636,7 +632,7 @@ export default function TrackerPage() {
                   setDistributor(event.target.value);
                   setPage(1);
                 }}
-                className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="zeit-input h-10 text-sm"
               >
                 {distributors.map((item) => (
                   <option key={item} value={item}>
@@ -652,44 +648,41 @@ export default function TrackerPage() {
             MAIN TRACKER TABLE
         ---------------------------------------------------- */}
 
-        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
 
-          <div className="flex flex-col gap-3 border-b border-gray-200 p-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 md:flex-row md:items-center md:justify-between">
 
             <div>
-              <h2 className="text-base font-bold tracking-tight text-gray-950">
+              <h2 className="text-base font-extrabold tracking-tight text-slate-950">
                 Transaction Records
               </h2>
 
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-[11px] font-medium text-slate-500">
                 Showing {paginatedTransactions.length} of{" "}
                 {filteredTransactions.length} matching records
               </p>
             </div>
 
-            <div className="rounded-lg bg-gray-50 px-3 py-2 text-xs font-medium text-gray-500">
-              {filteredTransactions.length} record{filteredTransactions.length === 1 ? "" : "s"} found
+            <div className="text-[11px] font-medium text-slate-400">
+              Excel-compatible transaction fields
             </div>
           </div>
 
           {/* Loading */}
 
           {loading ? (
-            <div className="flex min-h-[400px] items-center justify-center bg-gray-50/40">
+            <div className="flex min-h-[400px] items-center justify-center">
               <div className="text-center">
-                <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+                <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-4 border-gray-200 border-t-amber-500" />
 
-                <p className="text-sm text-gray-500">
+                <p className="text-xs font-medium text-slate-500">
                   Loading transactions...
                 </p>
               </div>
             </div>
           ) : paginatedTransactions.length === 0 ? (
-            <div className="p-14 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-lg text-gray-500">
-                ⌕
-              </div>
-              <p className="mt-4 font-semibold text-gray-800">
+            <div className="p-12 text-center">
+              <p className="font-semibold text-gray-800">
                 No transactions found.
               </p>
 
@@ -704,85 +697,85 @@ export default function TrackerPage() {
                 {/* Table Header */}
 
                 <thead>
-                  <tr className="bg-gray-50/95">
+                  <tr className="bg-gray-50">
 
-                    <th className="sticky left-0 z-20 border-b border-r border-gray-200 bg-gray-50 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="sticky left-0 z-20 border-b border-r border-slate-200/80 bg-slate-50/90 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       SL
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Date Loaded
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Customer Company Name
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       PO Number
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Transaction Type
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       License Description
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Buy Price
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Sell Price
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Prorate Price
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-center text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Prorate Days
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Prorate Period
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-center text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Qty
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Total Revenue
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       P/L
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Margin %
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Distributor
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Invoice Status
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Payment Received
                     </th>
 
-                    <th className="border-b border-gray-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="border-b border-slate-100 px-4 py-3 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Remarks
                     </th>
 
-                    <th className="sticky right-0 z-20 border-b border-l border-gray-200 bg-gray-50 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="sticky right-0 z-20 border-b border-l border-slate-200/80 bg-slate-50/90 px-4 py-3 text-center text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Action
                     </th>
                   </tr>
@@ -790,17 +783,17 @@ export default function TrackerPage() {
 
                 {/* Table Body */}
 
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-slate-100">
 
                   {paginatedTransactions.map((item, index) => (
                     <tr
                       key={item.id}
-                      className="group transition hover:bg-blue-50/40"
+                      className="group transition-all duration-150 hover:bg-amber-50/35"
                     >
 
                       {/* SL */}
 
-                      <td className="sticky left-0 z-10 whitespace-nowrap border-r border-gray-100 bg-white px-4 py-4 text-sm font-semibold text-gray-700 group-hover:bg-blue-50/40">
+                      <td className="sticky left-0 z-10 whitespace-nowrap border-r border-slate-100 bg-white px-4 py-3 text-sm font-semibold text-gray-700 group-hover:bg-amber-50/35">
                         {(currentPage - 1) * pageSize +
                           index +
                           1}
@@ -808,13 +801,13 @@ export default function TrackerPage() {
 
                       {/* Date */}
 
-                      <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-700">
+                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
                         {formatDate(item.date)}
                       </td>
 
                       {/* Customer */}
 
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3">
                         <p className="max-w-[220px] truncate text-sm font-semibold text-gray-900">
                           {item.customer}
                         </p>
@@ -822,25 +815,21 @@ export default function TrackerPage() {
 
                       {/* PO */}
 
-                      <td className="px-4 py-4 text-sm text-gray-700">
+                      <td className="px-4 py-3 text-sm text-gray-700">
                         {item.poNumber || "-"}
                       </td>
 
                       {/* Type */}
 
-                      <td className="px-4 py-4">
-                        <span
-                          className={`whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-bold ${getTransactionTypeClass(
-                            item.transactionType
-                          )}`}
-                        >
+                      <td className="px-4 py-3">
+                        <span className="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
                           {item.transactionType || "Not Set"}
                         </span>
                       </td>
 
                       {/* Product */}
 
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3">
                         <p className="max-w-[300px] truncate text-sm text-gray-800">
                           {item.product}
                         </p>
@@ -848,19 +837,19 @@ export default function TrackerPage() {
 
                       {/* Buy */}
 
-                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm text-gray-700">
+                      <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700">
                         {formatCurrency(item.buyPrice)}
                       </td>
 
                       {/* Sell */}
 
-                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-medium text-gray-900">
+                      <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900">
                         {formatCurrency(item.sellPrice)}
                       </td>
 
                       {/* Prorate */}
 
-                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm text-gray-700">
+                      <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700">
                         {item.proratePrice !== null
                           ? formatCurrency(item.proratePrice)
                           : "-"}
@@ -868,51 +857,51 @@ export default function TrackerPage() {
 
                       {/* Days */}
 
-                      <td className="px-4 py-4 text-center text-sm text-gray-700">
+                      <td className="px-4 py-3 text-center text-sm text-gray-700">
                         {item.prorateDays ?? "-"}
                       </td>
 
                       {/* Period */}
 
-                      <td className="px-4 py-4 text-sm text-gray-700">
+                      <td className="px-4 py-3 text-sm text-gray-700">
                         {item.periodLabel || "-"}
                       </td>
 
                       {/* Quantity */}
 
-                      <td className="px-4 py-4 text-center text-sm font-semibold text-gray-900">
+                      <td className="px-4 py-3 text-center text-sm font-semibold text-gray-900">
                         {item.quantity}
                       </td>
 
                       {/* Revenue */}
 
-                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-bold text-blue-700">
+                      <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-bold text-gray-900">
                         {formatCurrency(item.revenue)}
                       </td>
 
                       {/* Profit */}
 
-                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-bold text-green-700">
+                      <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-semibold text-green-700">
                         {formatCurrency(item.profit)}
                       </td>
 
                       {/* Margin */}
 
-                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-semibold text-gray-900">
+                      <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-semibold text-gray-900">
                         {Number(item.margin || 0).toFixed(2)}%
                       </td>
 
                       {/* Distributor */}
 
-                      <td className="px-4 py-4 text-sm text-gray-700">
+                      <td className="px-4 py-3 text-sm text-gray-700">
                         {item.distributor || "Not Assigned"}
                       </td>
 
                       {/* Invoice */}
 
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3">
                         <span
-                          className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(
+                          className={`inline-flex min-h-7 items-center whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${getStatusClass(
                             item.invoiceStatus
                           )}`}
                         >
@@ -922,9 +911,9 @@ export default function TrackerPage() {
 
                       {/* Payment */}
 
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3">
                         <span
-                          className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(
+                          className={`inline-flex min-h-7 items-center whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${getStatusClass(
                             item.paymentStatus
                           )}`}
                         >
@@ -934,7 +923,7 @@ export default function TrackerPage() {
 
                       {/* Remarks */}
 
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3">
                         <p
                           title={item.remarks || ""}
                           className="max-w-[280px] truncate text-sm text-gray-600"
@@ -945,7 +934,7 @@ export default function TrackerPage() {
 
                       {/* Actions */}
 
-                      <td className="sticky right-0 z-10 border-l border-gray-100 bg-white px-4 py-4 text-center group-hover:bg-blue-50/40">
+                      <td className="sticky right-0 z-10 border-l border-slate-100 bg-white px-4 py-3 text-center group-hover:bg-amber-50/35">
                         <div className="flex items-center justify-center gap-2">
 
                           {/* View - Everyone */}
@@ -955,7 +944,7 @@ export default function TrackerPage() {
                             onClick={() =>
                               setSelectedTransaction(item)
                             }
-                            className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-100"
+                            className="inline-flex h-8 items-center rounded-lg bg-blue-50 px-3 text-xs font-bold text-amber-700 ring-1 ring-amber-100 transition hover:-translate-y-px hover:bg-amber-100"
                           >
                             View
                           </button>
@@ -965,7 +954,7 @@ export default function TrackerPage() {
                           {canModifyTransactions && (
                             <a
                               href={`/tracker/${item.id}/edit`}
-                              className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
+                              className="inline-flex h-8 items-center rounded-lg bg-amber-50 px-3 text-xs font-bold text-amber-700 ring-1 ring-amber-100 transition hover:-translate-y-px hover:bg-amber-100"
                             >
                               Edit
                             </a>
@@ -987,9 +976,9 @@ export default function TrackerPage() {
 
           {!loading &&
             filteredTransactions.length > 0 && (
-              <div className="flex flex-col gap-3 border-t border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
 
-                <p className="text-sm text-gray-500">
+                <p className="text-xs font-medium text-slate-500">
                   Page {currentPage} of {totalPages}
                 </p>
 
@@ -1003,12 +992,12 @@ export default function TrackerPage() {
                         Math.max(1, value - 1)
                       )
                     }
-                    className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="zeit-btn zeit-btn-secondary h-9 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Previous
                   </button>
 
-                  <div className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white">
+                  <div className="zeit-btn zeit-btn-primary h-9 min-w-9 px-3 text-xs">
                     {currentPage}
                   </div>
 
@@ -1020,7 +1009,7 @@ export default function TrackerPage() {
                         Math.min(totalPages, value + 1)
                       )
                     }
-                    className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="zeit-btn zeit-btn-secondary h-9 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Next
                   </button>
@@ -1038,24 +1027,24 @@ export default function TrackerPage() {
 
       {selectedTransaction && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]"
           onClick={() => setSelectedTransaction(null)}
         >
           <div
-            className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl"
+            className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]"
             onClick={(event) => event.stopPropagation()}
           >
 
             {/* Modal Header */}
 
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white/95 px-6 py-5 backdrop-blur">
+            <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white px-6 py-5">
 
               <div>
                 <h2 className="text-xl font-bold text-gray-950">
                   Transaction Details
                 </h2>
 
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-[11px] font-medium text-slate-500">
                   Record #{selectedTransaction.id}
                   {selectedTransaction.sourceRow
                     ? ` • Excel Row ${selectedTransaction.sourceRow}`
@@ -1066,7 +1055,7 @@ export default function TrackerPage() {
               <button
                 type="button"
                 onClick={() => setSelectedTransaction(null)}
-                className="rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                className="zeit-btn zeit-btn-secondary h-9 px-3 text-xs"
               >
                 Close
               </button>
@@ -1075,65 +1064,65 @@ export default function TrackerPage() {
 
             {/* Modal Details */}
 
-            <div className="grid gap-6 p-6 md:grid-cols-2">
+            <div className="grid gap-5 p-6 md:grid-cols-2">
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Customer Company Name
                 </p>
 
-                <p className="mt-1 font-semibold text-gray-900">
+                <p className="mt-1 text-sm font-bold text-slate-900">
                   {selectedTransaction.customer}
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Date Loaded
                 </p>
 
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-slate-800">
                   {formatDate(selectedTransaction.date)}
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   PO Number
                 </p>
 
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-slate-800">
                   {selectedTransaction.poNumber || "-"}
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Transaction Type
                 </p>
 
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-slate-800">
                   {selectedTransaction.transactionType ||
                     "Not Set"}
                 </p>
               </div>
 
               <div className="md:col-span-2">
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   License Description
                 </p>
 
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-slate-800">
                   {selectedTransaction.product}
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Buy Price
                 </p>
 
-                <p className="mt-1 font-semibold text-gray-900">
+                <p className="mt-1 text-sm font-bold text-slate-900">
                   {formatCurrency(
                     selectedTransaction.buyPrice
                   )}
@@ -1141,11 +1130,11 @@ export default function TrackerPage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Sell Price
                 </p>
 
-                <p className="mt-1 font-semibold text-gray-900">
+                <p className="mt-1 text-sm font-bold text-slate-900">
                   {formatCurrency(
                     selectedTransaction.sellPrice
                   )}
@@ -1153,11 +1142,11 @@ export default function TrackerPage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Prorate Price
                 </p>
 
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-slate-800">
                   {selectedTransaction.proratePrice !== null
                     ? formatCurrency(
                         selectedTransaction.proratePrice
@@ -1167,21 +1156,21 @@ export default function TrackerPage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Quantity
                 </p>
 
-                <p className="mt-1 font-semibold text-gray-900">
+                <p className="mt-1 text-sm font-bold text-slate-900">
                   {selectedTransaction.quantity}
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Total Revenue
                 </p>
 
-                <p className="mt-1 font-bold text-blue-700">
+                <p className="mt-1 text-sm font-black text-blue-700">
                   {formatCurrency(
                     selectedTransaction.revenue
                   )}
@@ -1189,11 +1178,11 @@ export default function TrackerPage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   P/L
                 </p>
 
-                <p className="mt-1 font-bold text-green-700">
+                <p className="mt-1 text-sm font-black text-emerald-600">
                   {formatCurrency(
                     selectedTransaction.profit
                   )}
@@ -1201,7 +1190,7 @@ export default function TrackerPage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Margin %
                 </p>
 
@@ -1214,42 +1203,42 @@ export default function TrackerPage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Distributor
                 </p>
 
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-slate-800">
                   {selectedTransaction.distributor ||
                     "Not Assigned"}
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Prorate Days
                 </p>
 
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-slate-800">
                   {selectedTransaction.prorateDays ?? "-"}
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Prorate Period
                 </p>
 
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-slate-800">
                   {selectedTransaction.periodLabel || "-"}
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Subscription Start
                 </p>
 
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-slate-800">
                   {formatDate(
                     selectedTransaction.subscriptionStart
                   )}
@@ -1257,11 +1246,11 @@ export default function TrackerPage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Subscription End
                 </p>
 
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-slate-800">
                   {formatDate(
                     selectedTransaction.subscriptionEnd
                   )}
@@ -1269,7 +1258,7 @@ export default function TrackerPage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Invoice Status
                 </p>
 
@@ -1286,7 +1275,7 @@ export default function TrackerPage() {
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Payment Received
                 </p>
 
@@ -1303,11 +1292,11 @@ export default function TrackerPage() {
               </div>
 
               <div className="md:col-span-2">
-                <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                   Remarks
                 </p>
 
-                <div className="mt-2 rounded-lg bg-gray-50 p-4 text-sm leading-6 text-gray-700">
+                <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-sm leading-6 text-slate-700">
                   {selectedTransaction.remarks || "No remarks"}
                 </div>
               </div>
@@ -1316,11 +1305,11 @@ export default function TrackerPage() {
 
             {/* Modal Footer */}
 
-            <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 text-right">
+            <div className="border-t border-slate-200/80 bg-slate-50/90 px-6 py-4 text-right">
               <button
                 type="button"
                 onClick={() => setSelectedTransaction(null)}
-                className="rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(245,158,11,0.22)] transition hover:-translate-y-px hover:bg-amber-600"
               >
                 Close
               </button>

@@ -246,13 +246,13 @@ export default function DashboardPage() {
   } = data;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f8f7f4]">
       <div className="mx-auto max-w-[1600px] space-y-6 p-6 lg:p-8">
 
         {/* Dashboard Header */}
-        <section className="flex flex-col gap-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+        <section className="flex flex-col gap-5 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-amber-600">
               <span className="h-2 w-2 rounded-full bg-blue-600" />
               CSP Management
             </div>
@@ -275,14 +275,15 @@ export default function DashboardPage() {
                 {formatNumber(summary.totalQuantity)}
               </p>
             </div>
+
           </div>
         </section>
 
         {/* KPI Cards */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
           {/* Revenue */}
-          <div className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="group rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">
@@ -298,14 +299,14 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              <div className="rounded-xl bg-blue-50 px-3 py-2 text-xl ring-1 ring-blue-100">
+              <div className="rounded-xl bg-amber-50 px-3 py-2 text-xl ring-1 ring-amber-100">
                 ₹
               </div>
             </div>
           </div>
 
           {/* Profit */}
-          <div className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="group rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">
@@ -327,58 +328,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Margin */}
-          <div className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Overall Margin
-                </p>
-
-                <p className="mt-2 text-3xl font-bold tracking-tight text-gray-950">
-                  {summary.overallMargin.toFixed(2)}%
-                </p>
-
-                <p className="mt-2 text-xs text-gray-500">
-                  Calculated from Buy Price
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-purple-50 px-3 py-2 text-xl ring-1 ring-purple-100">
-                %
-              </div>
-            </div>
-          </div>
-
-          {/* Transactions */}
-          <div className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Transactions
-                </p>
-
-                <p className="mt-2 text-3xl font-bold tracking-tight text-gray-950">
-                  {formatNumber(summary.totalTransactions)}
-                </p>
-
-                <p className="mt-2 text-xs text-orange-600">
-                  {summary.actionRequiredCount} require action
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-orange-50 px-3 py-2 text-xl ring-1 ring-orange-100">
-                #
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* Financial Trend + Invoice Status */}
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
 
           {/* Monthly Trend */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm xl:col-span-2">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm xl:col-span-2">
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold tracking-tight text-gray-950">
@@ -425,7 +381,7 @@ export default function DashboardPage() {
                   <Bar
                     dataKey="revenue"
                     name="Revenue"
-                    fill="#2563eb"
+                    fill="#f59e0b"
                     radius={[5, 5, 0, 0]}
                   />
 
@@ -441,7 +397,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Invoice Status */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
             <div className="mb-4">
               <h2 className="text-lg font-bold tracking-tight text-gray-950">
                 Invoice Status
@@ -519,7 +475,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Action Required */}
-        <section className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
           <div className="flex flex-col gap-3 border-b border-gray-200 p-6 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-lg font-bold tracking-tight text-gray-950">
@@ -581,7 +537,7 @@ export default function DashboardPage() {
                   {actionRequired.slice(0, 8).map((item) => (
                     <tr
                       key={item.id}
-                      className="transition hover:bg-blue-50/40"
+                      className="transition hover:bg-amber-50/40"
                     >
                       <td className="px-6 py-4">
                         <p className="max-w-[220px] truncate text-sm font-semibold text-gray-900">
@@ -643,7 +599,7 @@ export default function DashboardPage() {
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
 
           {/* Customers */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
             <div className="mb-5">
               <h2 className="text-lg font-bold tracking-tight text-gray-950">
                 Top Customers by Revenue
@@ -693,7 +649,7 @@ export default function DashboardPage() {
 
                   <Bar
                     dataKey="revenue"
-                    fill="#2563eb"
+                    fill="#f59e0b"
                     radius={[0, 5, 5, 0]}
                   />
                 </BarChart>
@@ -702,7 +658,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Products */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
             <div className="mb-5">
               <h2 className="text-lg font-bold tracking-tight text-gray-950">
                 Top Products by Revenue
@@ -735,7 +691,7 @@ export default function DashboardPage() {
 
                     <div className="h-2 overflow-hidden rounded-full bg-gray-100">
                       <div
-                        className="h-full rounded-full bg-blue-600"
+                        className="h-full rounded-full bg-amber-500"
                         style={{
                           width: `${percentage}%`,
                         }}
@@ -752,7 +708,7 @@ export default function DashboardPage() {
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
 
           {/* Distributor */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
             <div className="mb-5">
               <h2 className="text-lg font-bold tracking-tight text-gray-950">
                 Distributor Performance
@@ -774,7 +730,7 @@ export default function DashboardPage() {
                       {item.name}
                     </p>
 
-                    <p className="font-bold text-blue-600">
+                    <p className="font-bold text-amber-600">
                       {formatCurrency(item.revenue)}
                     </p>
                   </div>
@@ -807,7 +763,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Transaction Type */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
             <div className="mb-5">
               <h2 className="text-lg font-bold tracking-tight text-gray-950">
                 Transaction Type
@@ -853,7 +809,7 @@ export default function DashboardPage() {
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
 
           {/* Payment */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
             <div className="mb-5">
               <h2 className="text-lg font-bold tracking-tight text-gray-950">
                 Payment Status
@@ -889,7 +845,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Transactions */}
-          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm xl:col-span-2">
+          <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm xl:col-span-2">
             <div className="flex items-center justify-between border-b border-gray-200 p-6">
               <div>
                 <h2 className="text-lg font-bold tracking-tight text-gray-950">
@@ -939,7 +895,7 @@ export default function DashboardPage() {
                   {recentTransactions.slice(0, 8).map((item) => (
                     <tr
                       key={item.id}
-                      className="transition hover:bg-blue-50/40"
+                      className="transition hover:bg-amber-50/40"
                     >
                       <td className="px-6 py-4">
                         <p className="max-w-[180px] truncate text-sm font-semibold text-gray-900">
