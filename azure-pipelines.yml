@@ -1,0 +1,74 @@
+trigger:
+  - main
+
+variables:
+  # Azure DevOps service connections
+  dockerRegistryServiceConnection: 'ZEIT-CSP-ACR'
+  azureSubscription: 'ZEIT-CSP-Azure'
+
+  # Docker / ACR
+  containerRegistry: 'csptracker45.azurecr.io'
+  imageRepository: 'zeit-csp-tracker'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+  # Azure DevOps build agent
+  vmImageName: 'ubuntu-latest'
+
+  # Azure App Service
+  appName: 'csp-tracker'
+
+stages:
+
+# ==========================================================
+# Stage 1 - Build and Push Docker Image to Azure Container Registry
+# ==========================================================
+- stage: Build
+  displayName: 'Build and Push Docker Image'
+
+  jobs:
+    - job: Build
+      displayName: 'Build Docker Image'
+
+      pool:
+        vmImage: $(vmImageName)
+
+      steps:
+
+        - task: Docker@2
+          displayName: 'Build and Push Image to ACR'
+          inputs:
+            command: 'buildAndPush'
+            containerRegistry: '$(dockerRegistryServiceConnection)'
+            repository: '$(imageRepository)'
+            dockerfile: '$(dockerfilePath)'
+            tags: |
+              $(tag)
+              latest
+
+
+# ==========================================================
+# Stage 2 - Deploy Container to Azure App Service
+# ==========================================================
+- stage: Deploy
+  displayName: 'Deploy to Azure App Service'
+
+  dependsOn: Build
+
+  condition: succeeded()
+
+  jobs:
+    - job: Deploy
+      displayName: 'Deploy Docker Container'
+
+      pool:
+        vmImage: $(vmImageName)
+
+      steps:
+
+        - task: AzureWebAppContainer@1
+          displayName: 'Deploy Container to App Service'
+          inputs:
+            azureSubscription: '$(azureSubscription)'
+            appName: '$(appName)'
+            containers: '$(containerRegistry)/$(imageRepository):$(tag)'
