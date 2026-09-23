@@ -48,14 +48,18 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(Number(value) || 0);
+  }).format(value);
 }
 
 function formatDate(value: string | null) {
-  if (!value) return "Not Set";
+  if (!value) return "-";
+
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+
+  if (Number.isNaN(date.getTime())) return "-";
+
   return date.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -64,9 +68,9 @@ function formatDate(value: string | null) {
 }
 
 function getInvoiceStatus(status: string | null) {
-  const normalized = status?.trim().toLowerCase();
+  const value = status?.trim().toLowerCase();
 
-  if (normalized === "invoice sent") {
+  if (value === "invoice sent") {
     return {
       label: "Invoice Sent",
       className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
@@ -74,7 +78,7 @@ function getInvoiceStatus(status: string | null) {
     };
   }
 
-  if (normalized === "need to send invoice") {
+  if (value === "need to send invoice") {
     return {
       label: "Need to Send",
       className: "bg-amber-50 text-amber-700 ring-amber-200",
@@ -82,7 +86,15 @@ function getInvoiceStatus(status: string | null) {
     };
   }
 
-  if (normalized === "hold") {
+  if (value === "credit note") {
+    return {
+      label: "Credit Note",
+      className: "bg-violet-50 text-violet-700 ring-violet-200",
+      dot: "bg-violet-500",
+    };
+  }
+
+  if (value === "hold") {
     return {
       label: "Hold",
       className: "bg-red-50 text-red-700 ring-red-200",
@@ -90,50 +102,43 @@ function getInvoiceStatus(status: string | null) {
     };
   }
 
-  if (normalized === "credit note") {
-    return {
-      label: "Credit Note",
-      className: "bg-purple-50 text-purple-700 ring-purple-200",
-      dot: "bg-purple-500",
-    };
-  }
-
   return {
-    label: status?.trim() || "Not Set",
+    label: "Not Set",
     className: "bg-gray-50 text-gray-600 ring-gray-200",
     dot: "bg-gray-400",
   };
 }
 
 function getPaymentStatus(status: string | null) {
-  const normalized = status?.trim().toLowerCase();
+  const value = status?.trim().toLowerCase();
 
-  if (normalized === "yes") {
+  if (value === "yes") {
     return {
-      label: "Payment Received",
+      label: "Paid",
       className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
     };
   }
 
-  if (normalized === "no") {
+  if (value === "no") {
     return {
-      label: "Payment Pending",
+      label: "Pending",
       className: "bg-red-50 text-red-700 ring-red-200",
     };
   }
 
-  if (normalized === "not applicable") {
+  if (value === "not applicable") {
     return {
-      label: "Not Applicable",
-      className: "bg-blue-50 text-blue-700 ring-blue-200",
+      label: "N/A",
+      className: "bg-gray-50 text-gray-600 ring-gray-200",
     };
   }
 
   return {
-    label: status?.trim() || "Not Set",
+    label: "Not Set",
     className: "bg-gray-50 text-gray-600 ring-gray-200",
   };
 }
+
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -330,24 +335,6 @@ export default function InvoicesPage() {
     (item) => !item.paymentStatus?.trim()
   ).length;
 
-  const invoiceStatusAmounts = useMemo(() => ({
-    needToSend: invoices
-      .filter((item) => item.invoiceStatus?.trim().toLowerCase() === "need to send invoice")
-      .reduce((sum, item) => sum + item.revenue, 0),
-    invoiceSent: invoices
-      .filter((item) => item.invoiceStatus?.trim().toLowerCase() === "invoice sent")
-      .reduce((sum, item) => sum + item.revenue, 0),
-  }), [invoices]);
-
-  const paymentStatusAmounts = useMemo(() => ({
-    pending: invoices
-      .filter((item) => item.paymentStatus?.trim().toLowerCase() === "no")
-      .reduce((sum, item) => sum + item.revenue, 0),
-    received: invoices
-      .filter((item) => item.paymentStatus?.trim().toLowerCase() === "yes")
-      .reduce((sum, item) => sum + item.revenue, 0),
-  }), [invoices]);
-
   const hasFilters =
     search.trim() !== "" ||
     invoiceStatus !== "All" ||
@@ -365,15 +352,15 @@ export default function InvoicesPage() {
 
   const actionRequired = useMemo(
     () =>
-      invoices.filter(
-        (item) =>
-          item.invoiceStatus?.trim().toLowerCase() !== "invoice sent" ||
-          item.paymentStatus?.trim().toLowerCase() === "no"
-      ),
+      invoices
+        .filter(
+          (item) =>
+            item.invoiceStatus?.trim().toLowerCase() !== "invoice sent" ||
+            item.paymentStatus?.trim().toLowerCase() === "no"
+        )
+        .slice(0, 6),
     [invoices]
   );
-
-  const actionRequiredVisible = actionRequired.slice(0, 6);
 
   if (checkingRole) {
     return (
@@ -383,218 +370,115 @@ export default function InvoicesPage() {
     );
   }
 
-  const quickFilter = (invoiceValue: string, paymentValue = "All") => {
-    setInvoiceStatus(invoiceValue);
-    setPaymentStatus(paymentValue);
-    setSearch("");
-  };
-
   return (
-    <main className="min-h-screen bg-gray-50/70 text-gray-950">
-      <div className="mx-auto w-full max-w-[1800px] px-4 py-6 sm:px-6 lg:px-8 xl:px-10">
-        <header className="mb-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-blue-600">
-                <span className="h-2 w-2 rounded-full bg-blue-600" /> Invoice Desk
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Invoice Management</h1>
-              <p className="mt-1.5 max-w-3xl text-sm text-gray-500">
-                Manage the invoice lifecycle from <strong>Need to Send</strong> to <strong>Invoice Sent</strong> and <strong>Payment Received</strong>.
-              </p>
+    <main className="min-h-screen bg-[#f8f7f3] text-slate-950">
+      <div className="mx-auto w-full max-w-[1800px] px-5 py-5 sm:px-6 lg:px-8 xl:px-10">
+        <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="mb-1.5 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-amber-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+              Finance / Invoice Desk
             </div>
-            <button
-              type="button"
-              onClick={loadInvoices}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 text-sm font-bold text-gray-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-            >
-              <RefreshIcon /> Refresh Data
-            </button>
-          </div>
-        </header>
 
-        {/* Excel-style workflow summary */}
-        <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-          <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-base font-bold text-gray-950">Invoice &amp; Payment Overview</h2>
-              <p className="mt-1 text-xs text-gray-500">Use the workflow below to see exactly what needs to be invoiced and what needs payment follow-up.</p>
-            </div>
-            <span className="text-xs font-semibold text-gray-400">{summary.totalInvoices.toLocaleString("en-IN")} total records</span>
+            <p className="text-sm font-medium text-slate-500">
+              {summary.totalInvoices.toLocaleString("en-IN")} invoice records · track sending and payment progress
+            </p>
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-2">
-            <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900">Invoice Workflow</h3>
-                  <p className="mt-0.5 text-[11px] text-gray-500">Invoice preparation and sending status</p>
-                </div>
-                <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-gray-500 ring-1 ring-gray-200">Invoice</span>
-              </div>
+          <button
+            type="button"
+            onClick={loadInvoices}
+            className="zeit-btn h-10 bg-[#f59e0b] px-4 text-white shadow-[0_6px_16px_rgba(245,158,11,0.18)] hover:bg-[#d97706] hover:shadow-[0_8px_20px_rgba(245,158,11,0.23)]"
+          >
+            <RefreshIcon />
+            Refresh Data
+          </button>
+        </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <StatusCard
-                  label="Need to Send"
-                  count={needToSendCount}
-                  value={formatCompactCurrency(invoiceStatusAmounts.needToSend)}
-                  tone="amber"
-                  active={invoiceStatus === "Need to Send Invoice" && paymentStatus === "All"}
-                  onClick={() => quickFilter("Need to Send Invoice")}
-                  icon={<AlertIcon />}
-                />
-                <StatusCard
-                  label="Invoice Sent"
-                  count={invoiceSentCount}
-                  value={formatCompactCurrency(invoiceStatusAmounts.invoiceSent)}
-                  tone="green"
-                  active={invoiceStatus === "Invoice Sent" && paymentStatus === "All"}
-                  onClick={() => quickFilter("Invoice Sent")}
-                  icon={<CheckIcon />}
-                />
-                <StatusCard
-                  label="Not Set"
-                  count={invoiceNotSetCount}
-                  value="Invoice status missing"
-                  tone="gray"
-                  active={invoiceStatus === "Not Set" && paymentStatus === "All"}
-                  onClick={() => quickFilter("Not Set")}
-                  icon={<MinusIcon />}
-                />
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900">Payment Workflow</h3>
-                  <p className="mt-0.5 text-[11px] text-gray-500">Track collections after the invoice is sent</p>
-                </div>
-                <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-gray-500 ring-1 ring-gray-200">Payment</span>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <StatusCard
-                  label="Payment Pending"
-                  count={paymentPendingCount}
-                  value={formatCompactCurrency(paymentStatusAmounts.pending)}
-                  tone="red"
-                  active={paymentStatus === "No" && invoiceStatus === "All"}
-                  onClick={() => quickFilter("All", "No")}
-                  icon={<AlertIcon />}
-                />
-                <StatusCard
-                  label="Payment Received"
-                  count={paymentReceivedCount}
-                  value={formatCompactCurrency(paymentStatusAmounts.received)}
-                  tone="blue"
-                  active={paymentStatus === "Yes" && invoiceStatus === "All"}
-                  onClick={() => quickFilter("All", "Yes")}
-                  icon={<CheckIcon />}
-                />
-                <StatusCard
-                  label="Not Set"
-                  count={paymentNotSetCount}
-                  value="Payment status missing"
-                  tone="gray"
-                  active={paymentStatus === "Not Set" && invoiceStatus === "All"}
-                  onClick={() => quickFilter("All", "Not Set")}
-                  icon={<MinusIcon />}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-blue-100 bg-blue-50/50 px-4 py-3">
-            <span className="text-xs font-bold text-blue-800">How to use:</span>
-            <span className="text-xs text-blue-700">Click <strong>Need to Send</strong> to prepare invoices.</span>
-            <span className="text-blue-300">→</span>
-            <span className="text-xs text-blue-700">Click <strong>Invoice Sent</strong> after sending.</span>
-            <span className="text-blue-300">→</span>
-            <span className="text-xs text-blue-700">Follow <strong>Payment Pending</strong> until payment is received.</span>
+        <section className="zeit-metric-strip mb-5">
+          <div className="zeit-metric-grid xl:grid-cols-6">
+            <KpiCard title="Invoice Value" value={formatCompactCurrency(summary.totalRevenue)} subtitle={`${summary.totalInvoices} records`} icon={<RevenueIcon />} iconClass="bg-amber-50 text-amber-600 ring-1 ring-amber-100 ring-blue-100" />
+            <KpiCard title="Invoice Sent" value={invoiceSentCount.toLocaleString("en-IN")} subtitle="Completed" icon={<CheckIcon />} iconClass="bg-emerald-50 text-emerald-600 ring-emerald-100" />
+            <KpiCard title="Need to Send" value={needToSendCount.toLocaleString("en-IN")} subtitle="Action required" icon={<AlertIcon />} iconClass="bg-amber-50 text-amber-600 ring-amber-100" />
+            <KpiCard title="Payment Pending" value={paymentPendingCount.toLocaleString("en-IN")} subtitle="Awaiting collection" icon={<AlertIcon />} iconClass="bg-red-50 text-red-600 ring-red-100" />
+            <KpiCard title="Payment Received" value={paymentReceivedCount.toLocaleString("en-IN")} subtitle="Confirmed paid" icon={<CheckIcon />} iconClass="bg-emerald-50 text-emerald-600 ring-emerald-100" />
+            <KpiCard title="Missing Status" value={(invoiceNotSetCount + paymentNotSetCount).toLocaleString("en-IN")} subtitle={`${invoiceNotSetCount} invoice · ${paymentNotSetCount} payment`} icon={<MinusIcon />} iconClass="bg-slate-50 text-slate-500 ring-slate-200" />
           </div>
         </section>
 
-        {/* Action queue */}
-        <section className="mb-6 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-amber-100 bg-amber-50/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700"><AlertIcon /></span>
+        <section className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
+          <div className="overflow-hidden rounded-2xl border border-amber-200/80 bg-white shadow-[0_8px_26px_rgba(15,23,42,0.045)]">
+            <div className="flex items-center justify-between border-b border-amber-100 bg-[#fffaf0] px-5 py-3.5">
+              <div>
                 <h2 className="font-bold text-gray-950">Action Required</h2>
-                <span className="rounded-full bg-amber-600 px-2.5 py-1 text-[11px] font-bold text-white">{actionRequired.length}</span>
+                <p className="mt-1 text-xs text-gray-500">Invoices that are not sent or payments still pending.</p>
               </div>
-              <p className="mt-1 pl-10 text-xs text-gray-500">Start here each time you open Invoice Management.</p>
+              <button type="button" onClick={() => { setInvoiceStatus("Need to Send Invoice"); setPaymentStatus("All"); }} className="zeit-btn h-9 bg-white px-3 text-xs font-extrabold text-amber-700 ring-1 ring-amber-200 hover:bg-amber-50">View Need to Send</button>
             </div>
-            <button type="button" onClick={() => quickFilter("Need to Send Invoice")} className="rounded-lg bg-white px-3.5 py-2 text-xs font-bold text-amber-700 ring-1 ring-amber-200 transition hover:bg-amber-100">
-              Show invoices to send
-            </button>
-          </div>
-
-          {actionRequired.length === 0 ? (
-            <div className="px-6 py-10 text-center">
-              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"><CheckIcon /></div>
-              <p className="mt-3 text-sm font-bold text-gray-800">Everything is up to date</p>
-              <p className="mt-1 text-xs text-gray-500">No invoice or payment action is currently outstanding.</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {actionRequiredVisible.map((invoice) => {
+            <div className="divide-y divide-slate-100">
+              {actionRequired.length === 0 ? (
+                <div className="p-8 text-center text-sm text-gray-500">No invoice actions currently require attention.</div>
+              ) : actionRequired.map((invoice) => {
                 const invoiceState = getInvoiceStatus(invoice.invoiceStatus);
                 const paymentState = getPaymentStatus(invoice.paymentStatus);
                 return (
-                  <div key={invoice.id} className="px-5 py-4 transition hover:bg-gray-50 sm:px-6">
-                    <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr_auto] lg:items-center">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-sm font-bold text-gray-900">{invoice.customer}</p>
-                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${invoiceState.className}`}>{invoiceState.label}</span>
-                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${paymentState.className}`}>{paymentState.label}</span>
-                        </div>
-                        <p className="mt-1 truncate text-xs text-gray-500">{invoice.product}</p>
-                        <p className="mt-1 text-xs text-gray-400">PO: {invoice.poNumber || "Not Set"} · {formatDate(invoice.date)}</p>
+                  <div key={invoice.id} className="flex flex-col gap-3 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-bold text-gray-900">{invoice.customer}</p>
+                        <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${invoiceState.className}`}>{invoiceState.label}</span>
+                        <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${paymentState.className}`}>{paymentState.label}</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-4 sm:max-w-sm">
-                        <div><p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">Invoice Amount</p><p className="mt-1 text-sm font-bold text-gray-900">{formatCurrency(invoice.revenue)}</p></div>
-                        <div><p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">Quantity</p><p className="mt-1 text-sm font-bold text-gray-900">{invoice.quantity.toLocaleString("en-IN")}</p></div>
-                      </div>
-                      <div className="flex shrink-0 gap-2 lg:justify-end">
-                        <button type="button" onClick={() => setSelectedInvoice(invoice)} className="rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50">View</button>
-                        {canEditTransactions && <a href={`/tracker/${invoice.id}/edit`} className="rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-blue-700">Update</a>}
-                      </div>
+                      <p className="mt-1 truncate text-xs text-gray-500">{invoice.product} · PO {invoice.poNumber || "Not Set"}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <span className="text-sm font-bold text-gray-900">{formatCurrency(invoice.revenue)}</span>
+                      <button type="button" onClick={() => setSelectedInvoice(invoice)} className="inline-flex h-8 items-center rounded-lg bg-blue-50 px-3 text-xs font-extrabold text-blue-700 ring-1 ring-blue-100 hover:-translate-y-px hover:bg-blue-100">View</button>
+                      {canEditTransactions && <a href={`/tracker/${invoice.id}/edit`} className="inline-flex h-8 items-center rounded-lg bg-amber-50 px-3 text-xs font-extrabold text-amber-700 ring-1 ring-amber-100 hover:-translate-y-px hover:bg-amber-100">Update</a>}
                     </div>
                   </div>
                 );
               })}
             </div>
-          )}
+          </div>
+
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_26px_rgba(15,23,42,0.045)]">
+            <div className="mb-4">
+              <h2 className="font-bold text-gray-950">Invoice Workflow</h2>
+              <p className="mt-1 text-xs text-gray-500">Quick view of the current billing pipeline.</p>
+            </div>
+            <div className="space-y-3">
+              <WorkflowRow label="Need to Send" count={needToSendCount} onClick={() => { setInvoiceStatus("Need to Send Invoice"); setPaymentStatus("All"); }} tone="amber" />
+              <WorkflowRow label="Invoice Sent" count={invoiceSentCount} onClick={() => { setInvoiceStatus("Invoice Sent"); setPaymentStatus("All"); }} tone="green" />
+              <WorkflowRow label="Payment Pending" count={paymentPendingCount} onClick={() => { setInvoiceStatus("All"); setPaymentStatus("No"); }} tone="red" />
+              <WorkflowRow label="Payment Received" count={paymentReceivedCount} onClick={() => { setInvoiceStatus("All"); setPaymentStatus("Yes"); }} tone="blue" />
+              <WorkflowRow label="Missing Status" count={invoiceNotSetCount + paymentNotSetCount} onClick={() => { setInvoiceStatus("Not Set"); setPaymentStatus("Not Set"); }} tone="gray" />
+            </div>
+          </div>
         </section>
 
-        {/* Register */}
-        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-200 px-5 py-5 sm:px-6">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+          <div className="border-b border-slate-100 px-5 py-3.5 sm:px-6">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-bold tracking-tight">Invoice Register</h2>
-                  <span className="rounded-md bg-gray-100 px-2.5 py-1 text-[11px] font-bold text-gray-600">{filteredInvoices.length} shown</span>
-                </div>
-                <p className="mt-1 text-sm text-gray-500">Complete invoice details from the CSP Tracker, including PO, product, pricing and payment status.</p>
+                <h2 className="text-lg font-bold tracking-tight">Invoice Register</h2>
+                <p className="mt-1 text-sm text-gray-500">Detailed invoice and payment tracking linked to CSP transactions.</p>
               </div>
-              {hasFilters && <button type="button" onClick={clearFilters} className="self-start rounded-lg px-3 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 lg:self-auto">Clear filters</button>}
+              <div className="flex items-center gap-3">
+                <span className="rounded-lg bg-slate-50 px-3 py-2 text-xs font-extrabold text-slate-500 ring-1 ring-slate-200">{filteredInvoices.length} records</span>
+                {hasFilters && <button type="button" onClick={clearFilters} className="zeit-btn h-9 px-3 text-xs text-blue-700">Clear filters</button>}
+              </div>
             </div>
 
-            <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50/70 p-3">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                <div className="relative xl:col-span-1">
-                  <SearchIcon />
-                  <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search customer, PO, product..." className="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50" />
-                </div>
-                <StyledSelect label="Invoice Status" value={invoiceStatus} onChange={setInvoiceStatus} options={invoiceStatuses} />
-                <StyledSelect label="Payment Status" value={paymentStatus} onChange={setPaymentStatus} options={paymentStatuses} />
-                <StyledSelect label="Distributor" value={distributor} onChange={setDistributor} options={distributors} />
-                <StyledSelect label="Transaction Type" value={transactionType} onChange={setTransactionType} options={transactionTypes} />
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              <div className="relative xl:col-span-1">
+                <SearchIcon />
+                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Customer, PO, product, distributor..." className="zeit-input h-11 w-full pl-10 pr-4 text-sm" />
               </div>
+              <StyledSelect label="Invoice Status" value={invoiceStatus} onChange={setInvoiceStatus} options={["All", ...invoiceStatuses]} />
+              <StyledSelect label="Payment Status" value={paymentStatus} onChange={setPaymentStatus} options={["All", ...paymentStatuses]} />
+              <StyledSelect label="Distributor" value={distributor} onChange={setDistributor} options={["All", ...distributors]} />
+              <StyledSelect label="Transaction Type" value={transactionType} onChange={setTransactionType} options={["All", ...transactionTypes]} />
             </div>
           </div>
 
@@ -602,7 +486,7 @@ export default function InvoicesPage() {
             <div className="overflow-x-auto">
               <table className="min-w-[1750px] w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50/95">
+                  <tr className="border-b border-slate-200/80 bg-[#fafaf8]">
                     <TableHeader>Date</TableHeader>
                     <TableHeader>Customer / PO</TableHeader>
                     <TableHeader>Product / Period</TableHeader>
@@ -613,7 +497,7 @@ export default function InvoicesPage() {
                     <TableHeader>Invoice Status</TableHeader>
                     <TableHeader>Payment Status</TableHeader>
                     <TableHeader>Remarks</TableHeader>
-                    <th className="sticky right-0 z-20 border-l border-gray-200 bg-gray-50 px-5 py-4 text-center text-[11px] font-bold uppercase tracking-wide text-gray-500">Action</th>
+                    <th className="sticky right-0 z-20 border-l border-slate-200/80 bg-gray-50 px-5 py-3.5 text-center text-[11px] font-bold uppercase tracking-wide text-gray-500">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -621,21 +505,21 @@ export default function InvoicesPage() {
                     const invoiceState = getInvoiceStatus(invoice.invoiceStatus);
                     const paymentState = getPaymentStatus(invoice.paymentStatus);
                     return (
-                      <tr key={invoice.id} className="group border-b border-gray-100 hover:bg-blue-50/30">
-                        <td className="whitespace-nowrap px-5 py-4 text-sm text-gray-600">{formatDate(invoice.date)}</td>
-                        <td className="max-w-[250px] px-5 py-4"><p className="truncate text-sm font-bold text-gray-900">{invoice.customer}</p><p className="mt-1 text-xs text-gray-500">PO: {invoice.poNumber || "Not Set"}</p></td>
-                        <td className="max-w-[330px] px-5 py-4"><p className="truncate text-sm text-gray-800">{invoice.product}</p><p className="mt-1 truncate text-xs text-gray-500">{invoice.periodLabel || "Subscription period not set"}{invoice.prorateDays ? ` · ${invoice.prorateDays} days` : ""}</p></td>
-                        <td className="px-5 py-4 text-sm text-gray-700">{invoice.distributor || "Not Assigned"}</td>
-                        <td className="px-5 py-4"><span className="rounded-md bg-gray-100 px-2.5 py-1.5 text-xs font-semibold text-gray-600">{invoice.transactionType || "Not Set"}</span></td>
-                        <td className="whitespace-nowrap px-5 py-4 text-right text-sm font-bold">{invoice.quantity.toLocaleString("en-IN")}</td>
-                        <td className="whitespace-nowrap px-5 py-4 text-right text-sm font-bold text-blue-700">{formatCurrency(invoice.revenue)}</td>
-                        <td className="whitespace-nowrap px-5 py-4"><span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${invoiceState.className}`}><span className={`h-1.5 w-1.5 rounded-full ${invoiceState.dot}`} />{invoiceState.label}</span></td>
-                        <td className="whitespace-nowrap px-5 py-4"><span className={`inline-flex rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${paymentState.className}`}>{paymentState.label}</span></td>
-                        <td className="max-w-[250px] px-5 py-4"><p title={invoice.remarks || ""} className="truncate text-sm text-gray-500">{invoice.remarks || "—"}</p></td>
-                        <td className="sticky right-0 z-10 border-l border-gray-100 bg-white px-4 py-4 text-center shadow-[-8px_0_12px_-12px_rgba(15,23,42,0.25)] group-hover:bg-blue-50/70">
+                      <tr key={invoice.id} className="group border-b border-slate-100 hover:bg-amber-50/25">
+                        <td className="whitespace-nowrap px-5 py-3.5 text-sm text-gray-600">{formatDate(invoice.date)}</td>
+                        <td className="max-w-[250px] px-5 py-3.5"><p className="truncate text-sm font-bold text-gray-900">{invoice.customer}</p><p className="mt-1 text-xs text-gray-500">PO: {invoice.poNumber || "Not Set"}</p></td>
+                        <td className="max-w-[330px] px-5 py-3.5"><p className="truncate text-sm text-gray-800">{invoice.product}</p><p className="mt-1 truncate text-xs text-gray-500">{invoice.periodLabel || "Subscription period not set"}{invoice.prorateDays ? ` · ${invoice.prorateDays} days` : ""}</p></td>
+                        <td className="px-5 py-3.5 text-sm text-gray-700">{invoice.distributor || "Not Assigned"}</td>
+                        <td className="px-5 py-3.5"><span className="rounded-md bg-gray-100 px-2.5 py-1.5 text-xs font-semibold text-gray-600">{invoice.transactionType || "Not Set"}</span></td>
+                        <td className="whitespace-nowrap px-5 py-3.5 text-right text-sm font-bold">{invoice.quantity.toLocaleString("en-IN")}</td>
+                        <td className="whitespace-nowrap px-5 py-3.5 text-right text-sm font-bold text-blue-700">{formatCurrency(invoice.revenue)}</td>
+                        <td className="whitespace-nowrap px-5 py-3.5"><span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[11px] font-extrabold ring-1 ring-inset ${invoiceState.className}`}><span className={`h-1.5 w-1.5 rounded-full ${invoiceState.dot}`} />{invoiceState.label}</span></td>
+                        <td className="whitespace-nowrap px-5 py-3.5"><span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ring-1 ring-inset ${paymentState.className}`}>{paymentState.label}</span></td>
+                        <td className="max-w-[250px] px-5 py-3.5"><p title={invoice.remarks || ""} className="truncate text-sm text-gray-500">{invoice.remarks || "—"}</p></td>
+                        <td className="sticky right-0 z-10 border-l border-slate-100 bg-white px-4 py-3.5 text-center shadow-[-8px_0_12px_-12px_rgba(15,23,42,0.25)] group-hover:bg-amber-50/60">
                           <div className="flex justify-center gap-2">
-                            <button type="button" onClick={() => setSelectedInvoice(invoice)} className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100">View</button>
-                            {canEditTransactions && <a href={`/tracker/${invoice.id}/edit`} className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700 hover:bg-amber-100">Update</a>}
+                            <button type="button" onClick={() => setSelectedInvoice(invoice)} className="inline-flex h-8 items-center rounded-lg bg-blue-50 px-3 text-xs font-extrabold text-blue-700 ring-1 ring-blue-100 hover:-translate-y-px hover:bg-blue-100">View</button>
+                            {canEditTransactions && <a href={`/tracker/${invoice.id}/edit`} className="inline-flex h-8 items-center rounded-lg bg-amber-50 px-3 text-xs font-extrabold text-amber-700 ring-1 ring-amber-100 hover:-translate-y-px hover:bg-amber-100">Update</a>}
                           </div>
                         </td>
                       </tr>
@@ -646,7 +530,7 @@ export default function InvoicesPage() {
             </div>
           )}
 
-          {!loading && filteredInvoices.length > 0 && <div className="flex flex-col gap-2 border-t border-gray-200 bg-gray-50/50 px-5 py-4 text-xs text-gray-500 sm:flex-row sm:justify-between"><span>Showing <strong className="text-gray-700">{filteredInvoices.length}</strong> of <strong className="text-gray-700">{invoices.length}</strong> records</span><span>Invoice data is synchronized with CSP Tracker transactions.</span></div>}
+          {!loading && filteredInvoices.length > 0 && <div className="flex flex-col gap-2 border-t border-slate-200/80 bg-gray-50/50 px-5 py-3.5 text-xs text-gray-500 sm:flex-row sm:justify-between"><span>Showing <strong className="text-gray-700">{filteredInvoices.length}</strong> of <strong className="text-gray-700">{invoices.length}</strong> records</span><span>Invoice data is synchronized with CSP Tracker transactions.</span></div>}
         </section>
       </div>
 
@@ -659,39 +543,29 @@ export default function InvoicesPage() {
 /* Components                                                                 */
 /* -------------------------------------------------------------------------- */
 
-function StatusCard({
+function WorkflowRow({
   label,
   count,
-  value,
-  tone,
-  active,
   onClick,
-  icon,
+  tone,
 }: {
   label: string;
   count: number;
-  value: string;
-  tone: "amber" | "green" | "red" | "blue" | "gray";
-  active: boolean;
   onClick: () => void;
-  icon: React.ReactNode;
+  tone: "amber" | "green" | "red" | "blue" | "gray";
 }) {
-  const styles = {
-    amber: "border-amber-200 bg-amber-50/50 text-amber-700",
-    green: "border-emerald-200 bg-emerald-50/50 text-emerald-700",
-    red: "border-red-200 bg-red-50/50 text-red-700",
-    blue: "border-blue-200 bg-blue-50/50 text-blue-700",
-    gray: "border-gray-200 bg-gray-50 text-gray-600",
+  const toneClass = {
+    amber: "bg-amber-50 text-amber-700 ring-amber-100",
+    green: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+    red: "bg-red-50 text-red-700 ring-red-100",
+    blue: "bg-blue-50 text-blue-700 ring-blue-100",
+    gray: "bg-gray-50 text-gray-600 ring-gray-200",
   }[tone];
 
   return (
-    <button type="button" onClick={onClick} className={`rounded-xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-sm ${styles} ${active ? "ring-2 ring-blue-500 ring-offset-1" : ""}`}>
-      <div className="flex items-start justify-between gap-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/80">{icon}</span>
-        <span className="text-2xl font-bold text-gray-950">{count.toLocaleString("en-IN")}</span>
-      </div>
-      <p className="mt-3 text-sm font-bold text-gray-800">{label}</p>
-      <p className="mt-1 text-xs font-semibold text-gray-500">{value}</p>
+    <button type="button" onClick={onClick} className="flex w-full items-center justify-between rounded-xl border border-slate-200/80 bg-white px-4 py-3 text-left transition-all duration-150 hover:-translate-y-px hover:border-blue-100 hover:bg-amber-50/25 hover:shadow-sm">
+      <span className="text-sm font-semibold text-gray-700">{label}</span>
+      <span className={`rounded-lg px-3 py-1.5 text-xs font-bold ring-1 ${toneClass}`}>{count.toLocaleString("en-IN")}</span>
     </button>
   );
 }
@@ -710,25 +584,15 @@ function KpiCard({
   iconClass: string;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-xs font-bold uppercase tracking-wide text-gray-500">
-            {title}
-          </p>
+    <div className="zeit-metric group">
+      <div className={`zeit-metric-icon ring-1 ${iconClass} transition-transform duration-200 group-hover:scale-105`}>
+        {icon}
+      </div>
 
-          <p className="mt-3 truncate text-xl font-bold tracking-tight text-gray-950 sm:text-2xl">
-            {value}
-          </p>
-
-          <p className="mt-1 truncate text-xs text-gray-400">{subtitle}</p>
-        </div>
-
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconClass}`}
-        >
-          {icon}
-        </div>
+      <div className="min-w-0">
+        <p className="zeit-metric-label">{title}</p>
+        <p className="zeit-metric-value">{value}</p>
+        <p className="zeit-metric-hint">{subtitle}</p>
       </div>
     </div>
   );
@@ -754,7 +618,7 @@ function StyledSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
+        className="zeit-input h-11 w-full px-3 text-sm"
       >
         <option value="All">All</option>
 
@@ -777,7 +641,7 @@ function TableHeader({
 }) {
   return (
     <th
-      className={`whitespace-nowrap px-5 py-4 text-${align} text-xs font-bold uppercase tracking-wide text-gray-500`}
+      className={`whitespace-nowrap px-5 py-3.5 text-${align} text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500`}
     >
       {children}
     </th>
@@ -787,7 +651,7 @@ function TableHeader({
 function LoadingState() {
   return (
     <div className="flex min-h-[420px] flex-col items-center justify-center">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200/80 border-t-blue-600" />
 
       <p className="mt-4 text-sm font-semibold text-gray-500">
         Loading invoice records...
@@ -851,15 +715,15 @@ function InvoiceModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm sm:p-6"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm sm:p-6"
       onClick={onClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]"
         onClick={(event) => event.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-start justify-between border-b border-gray-200 px-5 py-5 sm:px-7">
+        <div className="flex items-start justify-between border-b border-slate-200/80 px-5 py-5 sm:px-7">
           <div className="min-w-0">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -894,14 +758,14 @@ function InvoiceModal({
         {/* Modal Body */}
         <div className="max-h-[calc(92vh-145px)] overflow-y-auto p-5 sm:p-7">
           {/* Status Banner */}
-          <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-gray-200 bg-gray-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-[#fffaf0] p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-gray-400">
                 Invoice Status
               </p>
 
               <span
-                className={`mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${invoiceState.className}`}
+                className={`mt-2 inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[11px] font-extrabold ring-1 ring-inset ${invoiceState.className}`}
               >
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${invoiceState.dot}`}
@@ -916,7 +780,7 @@ function InvoiceModal({
               </p>
 
               <span
-                className={`mt-2 inline-flex rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${paymentState.className}`}
+                className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ring-1 ring-inset ${paymentState.className}`}
               >
                 {paymentState.label}
               </span>
@@ -1013,18 +877,18 @@ function InvoiceModal({
               Remarks
             </p>
 
-            <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 text-sm leading-6 text-gray-700">
+            <div className="rounded-xl border border-slate-200/80 bg-gray-50 px-4 py-4 text-sm leading-6 text-gray-700">
               {invoice.remarks || "No remarks available."}
             </div>
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="flex flex-col-reverse gap-3 border-t border-gray-200 bg-gray-50/70 px-5 py-4 sm:flex-row sm:justify-end sm:px-7">
+        <div className="flex flex-col-reverse gap-3 border-t border-slate-200/80 bg-gray-50/70 px-5 py-3.5 sm:flex-row sm:justify-end sm:px-7">
           <button
             type="button"
             onClick={onClose}
-            className="h-11 rounded-xl border border-gray-300 bg-white px-5 text-sm font-bold text-gray-600 transition hover:bg-gray-50"
+            className="h-11 rounded-xl border border-gray-300 bg-white px-5 text-sm font-bold text-gray-600 transition hover:bg-slate-50"
           >
             Close
           </button>
@@ -1053,7 +917,7 @@ function DetailCard({
   valueClass?: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4 transition hover:border-gray-300 hover:bg-white">
+    <div className="rounded-xl border border-slate-200/80 bg-gray-50/60 p-4 transition hover:border-gray-300 hover:bg-white">
       <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">
         {label}
       </p>

@@ -27,10 +27,6 @@ export default function CustomersClient() {
   const [showAdd, setShowAdd] = useState(false);
   const [newCustomer, setNewCustomer] = useState("");
   const [adding, setAdding] = useState(false);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(
-    null
-  );
 
   const [user, setUser] = useState<SessionUser | null>(null);
   const [checkingRole, setCheckingRole] = useState(true);
@@ -154,57 +150,6 @@ export default function CustomersClient() {
     }
   }
 
-  async function handleDeleteCustomer() {
-    if (!canModifyCustomers) {
-      setError("You do not have permission to delete customers.");
-      setCustomerToDelete(null);
-      return;
-    }
-
-    if (!customerToDelete) return;
-
-    if (customerToDelete.transactionCount > 0) {
-      setError(
-        "This customer cannot be deleted because it has transaction history."
-      );
-      setCustomerToDelete(null);
-      return;
-    }
-
-    try {
-      setDeletingId(customerToDelete.id);
-      setError("");
-
-      const response = await fetch("/api/customers", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: customerToDelete.id,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "Failed to delete customer.");
-      }
-
-      setCustomerToDelete(null);
-      await loadCustomers();
-    } catch (err) {
-      console.error(err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to delete customer."
-      );
-    } finally {
-      setDeletingId(null);
-    }
-  }
-
   const filteredCustomers = useMemo(() => {
     const term = search.trim().toLowerCase();
 
@@ -234,6 +179,116 @@ export default function CustomersClient() {
     0
   );
 
+function formatCompactCurrency(value: number) {
+  const absolute = Math.abs(value);
+
+  if (absolute >= 10000000) {
+    return `₹${(value / 10000000).toFixed(2)} Cr`;
+  }
+
+  if (absolute >= 100000) {
+    return `₹${(value / 100000).toFixed(2)} L`;
+  }
+
+  if (absolute >= 1000) {
+    return `₹${(value / 1000).toFixed(1)}K`;
+  }
+
+  return `₹${value.toFixed(0)}`;
+}
+
+function StatTile({
+  label,
+  value,
+  hint,
+  icon,
+  tone,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  icon: React.ReactNode;
+  tone: "blue" | "violet" | "indigo" | "green" | "red";
+}) {
+  const toneClasses = {
+    blue: "bg-blue-50 text-blue-600 ring-blue-100",
+    violet: "bg-violet-50 text-violet-600 ring-violet-100",
+    indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
+    green: "bg-emerald-50 text-emerald-600 ring-emerald-100",
+    red: "bg-red-50 text-red-600 ring-red-100",
+  }[tone];
+
+  return (
+    <div className="group flex min-h-[100px] items-center gap-3 px-4 py-4 sm:px-5">
+      <div
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 transition-transform duration-200 group-hover:scale-105 ${toneClasses}`}
+      >
+        {icon}
+      </div>
+
+      <div className="min-w-0">
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.1em] text-slate-400">
+          {label}
+        </p>
+        <p className="mt-1 truncate text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+          {value}
+        </p>
+        <p className="mt-0.5 truncate text-[11px] font-medium text-slate-400">
+          {hint}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function CustomersIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      <path d="M16 20a4 4 0 0 0-8 0" />
+      <circle cx="12" cy="9" r="3" />
+      <path d="M19 20a3.2 3.2 0 0 0-2.2-3" />
+      <path d="M17 6.2a2.8 2.8 0 0 1 0 5.6" />
+    </svg>
+  );
+}
+
+function TransactionsIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <path d="M8 8h8M8 12h6M8 16h4" />
+    </svg>
+  );
+}
+
+function RevenueIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      <path d="M12 3v18" />
+      <path d="M16.5 7.2c-.8-1.1-2.1-1.7-3.9-1.7-2.2 0-3.6 1.1-3.6 2.7 0 4.2 7.5 1.8 7.5 5.9 0 1.7-1.5 2.8-3.8 2.8-1.9 0-3.3-.6-4.2-1.8" />
+    </svg>
+  );
+}
+
+function ProfitIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      <path d="M4 19V5" />
+      <path d="M4 19h16" />
+      <path d="m7 15 4-4 3 2 5-6" />
+      <path d="M16 7h3v3" />
+    </svg>
+  );
+}
+
   function formatCurrency(value: number) {
     return `₹${value.toLocaleString("en-IN", {
       minimumFractionDigits: 2,
@@ -253,7 +308,7 @@ export default function CustomersClient() {
 
   if (checkingRole) {
     return (
-      <main className="min-h-screen bg-gray-50/70">
+      <main className="min-h-screen bg-[#f8f7f3]">
         <div className="mx-auto max-w-[1500px] px-6 py-12">
           <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-sm">
             <p className="text-sm text-gray-500">
@@ -266,23 +321,14 @@ export default function CustomersClient() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50/70">
-      <div className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#f8f7f3]">
+      <div className="mx-auto max-w-[1500px] px-5 py-5 sm:px-6 lg:px-8">
 
-        {/* Page Header */}
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        {/* Page tools */}
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-600">
-              <span className="h-2 w-2 rounded-full bg-blue-600" />
-              Customer Management
-            </div>
-
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">
-              Customers
-            </h1>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Manage customers and view their CSP transaction summary
+            <p className="text-xs font-semibold text-slate-500">
+              {totalCustomers} customer accounts
             </p>
           </div>
 
@@ -293,34 +339,30 @@ export default function CustomersClient() {
                 setShowAdd(!showAdd);
                 setError("");
               }}
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#f59e0b] px-4 text-sm font-extrabold text-white shadow-[0_7px_18px_rgba(245,158,11,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#d97706] hover:shadow-[0_10px_22px_rgba(245,158,11,0.27)]"
             >
-              + Add Customer
+              <span className="text-base leading-none">+</span>
+              Add Customer
             </button>
           )}
         </div>
 
         {/* Error */}
         {error && (
-          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700 shadow-sm">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 font-bold">
-                !
-              </span>
-              <span>
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
             {error}
-              </span>
-            </div>
+          </div>
         )}
 
         {/* Add Customer */}
         {canModifyCustomers && showAdd && (
-          <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <section className="mb-5 rounded-2xl border border-blue-100 bg-white p-5 shadow-[0_6px_22px_rgba(15,23,42,0.04)]">
             <div className="mb-4">
-              <h2 className="text-base font-bold tracking-tight text-gray-950">
+              <h2 className="text-base font-bold text-gray-900">
                 Add New Customer
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-xs font-medium text-slate-500">
                 Enter the customer company name.
               </p>
             </div>
@@ -337,14 +379,14 @@ export default function CustomersClient() {
                   }
                 }}
                 placeholder="Customer company name"
-                className="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="zeit-input flex-1 text-sm"
               />
 
               <button
                 type="button"
                 disabled={adding}
                 onClick={handleAddCustomer}
-                className="rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800 hover:shadow disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#f59e0b] px-4 text-sm font-extrabold text-white shadow-[0_7px_18px_rgba(245,158,11,0.18)] transition hover:bg-[#d97706] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {adding ? "Adding..." : "Add Customer"}
               </button>
@@ -355,7 +397,7 @@ export default function CustomersClient() {
                   setShowAdd(false);
                   setNewCustomer("");
                 }}
-                className="rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-[#fffaf0]"
               >
                 Cancel
               </button>
@@ -363,117 +405,64 @@ export default function CustomersClient() {
           </section>
         )}
 
-        {/* Summary Cards */}
-        <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-500">
-                Total Customers
-              </p>
-              <span className="rounded-lg bg-blue-50 text-blue-700 px-2.5 py-1.5 text-[11px] font-bold">
-                Customers
-              </span>
-            </div>
-
-            <p className="mt-3 text-3xl font-bold tracking-tight text-gray-950">
-              {totalCustomers}
-            </p>
-
-            <p className="mt-1 text-xs text-gray-400">
-              Registered customers
-            </p>
+        {/* Compact Summary */}
+        <section className="mb-6 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_7px_22px_rgba(15,23,42,0.045)]">
+          <div className="grid grid-cols-2 divide-x divide-y divide-slate-200/80 lg:grid-cols-4 lg:divide-y-0">
+            <StatTile
+              label="Customers"
+              value={totalCustomers.toLocaleString("en-IN")}
+              hint="Registered"
+              icon={<CustomersIcon />}
+              tone="blue"
+            />
+            <StatTile
+              label="Transactions"
+              value={totalTransactions.toLocaleString("en-IN")}
+              hint="CSP records"
+              icon={<TransactionsIcon />}
+              tone="violet"
+            />
+            <StatTile
+              label="Revenue"
+              value={formatCompactCurrency(totalRevenue)}
+              hint="Across customers"
+              icon={<RevenueIcon />}
+              tone="indigo"
+            />
+            <StatTile
+              label="P/L"
+              value={formatCompactCurrency(totalProfit)}
+              hint="Overall result"
+              icon={<ProfitIcon />}
+              tone={totalProfit >= 0 ? "green" : "red"}
+            />
           </div>
-
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-500">
-                Transactions
-              </p>
-              <span className="rounded-lg bg-violet-50 text-violet-700 px-2.5 py-1.5 text-[11px] font-bold">
-                Transactions
-              </span>
-            </div>
-
-            <p className="mt-3 text-3xl font-bold tracking-tight text-gray-950">
-              {totalTransactions}
-            </p>
-
-            <p className="mt-1 text-xs text-gray-400">
-              Total CSP transactions
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-500">
-                Total Revenue
-              </p>
-              <span className="rounded-lg bg-indigo-50 text-indigo-700 px-2.5 py-1.5 text-[11px] font-bold">
-                ₹
-              </span>
-            </div>
-
-            <p className="mt-3 text-3xl font-bold tracking-tight text-blue-700">
-              {formatCurrency(totalRevenue)}
-            </p>
-
-            <p className="mt-1 text-xs text-gray-400">
-              Across all customers
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-500">
-                Total P/L
-              </p>
-              <span className="rounded-lg bg-emerald-50 text-emerald-700 px-2.5 py-1.5 text-[11px] font-bold">
-                ↗
-              </span>
-            </div>
-
-            <p
-              className={`mt-3 text-3xl font-bold tracking-tight ${
-                totalProfit >= 0
-                  ? "text-emerald-600"
-                  : "text-red-600"
-              }`}
-            >
-              {formatCurrency(totalProfit)}
-            </p>
-
-            <p className="mt-1 text-xs text-gray-400">
-              Overall profit / loss
-            </p>
-          </div>
-
-        </div>
+        </section>
 
         {/* Customer List */}
-        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
 
           {/* Toolbar */}
-          <div className="flex flex-col gap-4 border-b border-gray-100 bg-white p-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 border-b border-slate-100 p-5 lg:flex-row lg:items-center lg:justify-between">
 
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-gray-950">
+              <h2 className="text-base font-extrabold tracking-tight text-slate-950">
                 Customer List
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-xs font-medium text-slate-500">
                 {filteredCustomers.length} customer
                 {filteredCustomers.length === 1 ? "" : "s"} shown
               </p>
             </div>
 
-            <div className="w-full lg:w-80">
+            <div className="w-full lg:w-96">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search customer..."
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+                className="zeit-input text-sm"
               />
             </div>
 
@@ -493,74 +482,74 @@ export default function CustomersClient() {
                   No customers found
                 </p>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-xs font-medium text-slate-500">
                   Try changing your search or add a new customer.
                 </p>
               </div>
             ) : (
               <table className="min-w-[1000px] w-full text-left">
-                <thead className="bg-gray-50/95">
+                <thead className="bg-slate-50/90">
                   <tr>
-                    <th className="px-5 py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+                    <th className="px-5 py-3.5 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       #
                     </th>
 
-                    <th className="px-5 py-4 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+                    <th className="px-5 py-3.5 text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                       Customer
                     </th>
 
-                    <th className="px-5 py-4 text-right text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+                    <th className="px-5 py-4 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
                       Transactions
                     </th>
 
-                    <th className="px-5 py-4 text-right text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+                    <th className="px-5 py-4 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
                       Revenue
                     </th>
 
-                    <th className="px-5 py-4 text-right text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+                    <th className="px-5 py-4 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
                       P/L
                     </th>
 
-                    <th className="px-5 py-4 text-center text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+                    <th className="px-5 py-4 text-center text-xs font-bold uppercase tracking-wide text-gray-500">
                       Created
                     </th>
 
-                    <th className="px-5 py-4 text-center text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">
+                    <th className="px-5 py-4 text-center text-xs font-bold uppercase tracking-wide text-gray-500">
                       Action
                     </th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-slate-100">
                   {filteredCustomers.map((customer, index) => (
                     <tr
                       key={customer.id}
-                      className="transition hover:bg-blue-50/40"
+                      className="transition-all duration-150 hover:bg-amber-50/30"
                     >
-                      <td className="px-5 py-4 text-sm font-semibold text-gray-400">
+                      <td className="px-5 py-3.5 text-xs font-bold text-slate-400">
                         {index + 1}
                       </td>
 
-                      <td className="px-5 py-4">
-                        <div className="font-semibold text-gray-900">
+                      <td className="px-5 py-3.5">
+                        <div className="font-bold text-slate-900">
                           {customer.name}
                         </div>
 
-                        <div className="mt-1 text-xs text-gray-400">
+                        <div className="mt-1 text-[11px] text-slate-400">
                           Customer ID: {customer.id}
                         </div>
                       </td>
 
-                      <td className="px-5 py-4 text-right text-sm font-semibold text-gray-700">
+                      <td className="px-5 py-3.5 text-right text-sm font-semibold text-slate-700">
                         {customer.transactionCount}
                       </td>
 
-                      <td className="px-5 py-4 text-right text-sm font-bold text-blue-700">
+                      <td className="px-5 py-3.5 text-right text-sm font-bold text-blue-700">
                         {formatCurrency(customer.totalRevenue)}
                       </td>
 
                       <td
-                        className={`px-5 py-4 text-right text-sm font-semibold ${
+                        className={`px-5 py-3.5 text-right text-sm font-bold ${
                           customer.totalProfit >= 0
                             ? "text-emerald-600"
                             : "text-red-600"
@@ -569,11 +558,11 @@ export default function CustomersClient() {
                         {formatCurrency(customer.totalProfit)}
                       </td>
 
-                      <td className="px-5 py-4 text-center text-sm font-medium text-gray-600">
+                      <td className="px-5 py-3.5 text-center text-sm text-slate-600">
                         {formatDate(customer.createdAt)}
                       </td>
 
-                      <td className="px-5 py-4 text-center">
+                      <td className="px-5 py-3.5 text-center">
                         <div className="flex items-center justify-center gap-2">
 
                           <button
@@ -583,7 +572,7 @@ export default function CustomersClient() {
                                 customer.name
                               )}`;
                             }}
-                            className="rounded-xl bg-blue-50 px-3.5 py-2 text-xs font-bold text-blue-700 ring-1 ring-blue-100 transition hover:bg-blue-100 hover:ring-blue-200"
+                            className="inline-flex h-8 items-center rounded-lg bg-blue-50 px-3 text-xs font-extrabold text-blue-700 ring-1 ring-blue-100 transition hover:-translate-y-px hover:bg-blue-100"
                           >
                             View
                           </button>
@@ -591,24 +580,10 @@ export default function CustomersClient() {
                           {canModifyCustomers && (
                             <a
                               href={`/customers/${customer.id}/edit`}
-                              className="rounded-xl bg-amber-50 px-3.5 py-2 text-xs font-bold text-amber-700 ring-1 ring-amber-100 transition hover:bg-amber-100 hover:ring-amber-200"
+                              className="inline-flex h-8 items-center rounded-lg bg-amber-50 px-3 text-xs font-extrabold text-amber-700 ring-1 ring-amber-100 transition hover:-translate-y-px hover:bg-amber-100"
                             >
                               Edit
                             </a>
-                          )}
-
-                          {canModifyCustomers && (
-                            <button
-                              type="button"
-                              disabled={deletingId === customer.id}
-                              onClick={() => {
-                                setError("");
-                                setCustomerToDelete(customer);
-                              }}
-                              className="rounded-xl bg-red-50 px-3.5 py-2 text-xs font-bold text-red-700 ring-1 ring-red-100 transition hover:bg-red-100 hover:ring-red-200 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              Delete
-                            </button>
                           )}
 
                         </div>
@@ -620,87 +595,6 @@ export default function CustomersClient() {
             )}
           </div>
         </section>
-
-        {/* Delete Confirmation */}
-        {customerToDelete && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="delete-customer-title"
-          >
-            <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl">
-              <div className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-lg text-red-600 ring-1 ring-red-100">
-                    !
-                  </div>
-
-                  <div>
-                    <h2
-                      id="delete-customer-title"
-                      className="text-lg font-bold tracking-tight text-gray-950"
-                    >
-                      Delete Customer?
-                    </h2>
-                    <p className="mt-1 text-sm leading-6 text-gray-500">
-                      You are about to delete{" "}
-                      <span className="font-semibold text-gray-900">
-                        {customerToDelete.name}
-                      </span>
-                      .
-                    </p>
-                  </div>
-                </div>
-
-                {customerToDelete.transactionCount > 0 ? (
-                  <div className="mt-5 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
-                    <p className="font-semibold">
-                      Deletion is not allowed.
-                    </p>
-                    <p className="mt-1">
-                      This customer has{" "}
-                      <span className="font-bold">
-                        {customerToDelete.transactionCount} transaction
-                        {customerToDelete.transactionCount === 1 ? "" : "s"}
-                      </span>{" "}
-                      and must be retained for historical records.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                    This customer has no transaction history. This action
-                    cannot be undone.
-                  </div>
-                )}
-
-                <div className="mt-6 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setCustomerToDelete(null)}
-                    disabled={deletingId !== null}
-                    className="rounded-xl border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-
-                  {customerToDelete.transactionCount === 0 && (
-                    <button
-                      type="button"
-                      onClick={handleDeleteCustomer}
-                      disabled={deletingId === customerToDelete.id}
-                      className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 hover:shadow disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {deletingId === customerToDelete.id
-                        ? "Deleting..."
-                        : "Delete Customer"}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
       </div>
     </main>

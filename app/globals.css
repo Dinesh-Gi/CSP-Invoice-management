@@ -1,33 +1,60 @@
 @import "tailwindcss";
 
 /* =========================================================
-   ZEIT CSP TRACKER - GLOBAL THEME
+   ZEIT CSP TRACKER - GLOBAL DESIGN SYSTEM
    ========================================================= */
 
 :root {
-  --background: #f5f7fb;
+  --background: #f4f7fb;
   --foreground: #172033;
 
   --primary: #2563eb;
   --primary-dark: #1d4ed8;
+  --primary-soft: #eff6ff;
+  --primary-ring: rgba(37, 99, 235, 0.14);
 
   --card: #ffffff;
   --border: #e2e8f0;
+  --border-strong: #cbd5e1;
 
   --muted: #64748b;
   --muted-light: #f1f5f9;
+  --muted-lighter: #f8fafc;
 
   --success: #16a34a;
+  --success-soft: #f0fdf4;
+
   --warning: #d97706;
+  --warning-soft: #fffbeb;
+
   --danger: #dc2626;
+  --danger-soft: #fef2f2;
+
+  --info: #0891b2;
+  --info-soft: #ecfeff;
+
+  --purple: #7c3aed;
+  --purple-soft: #f5f3ff;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md:
+    0 8px 24px rgba(15, 23, 42, 0.06),
+    0 2px 6px rgba(15, 23, 42, 0.03);
+  --shadow-lg:
+    0 18px 45px rgba(15, 23, 42, 0.08),
+    0 6px 16px rgba(15, 23, 42, 0.04);
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 /* =========================================================
@@ -35,21 +62,55 @@
    ========================================================= */
 
 html {
+  min-height: 100%;
   background: var(--background);
   color-scheme: light;
+  scroll-behavior: smooth;
 }
 
 body {
+  min-height: 100vh;
   margin: 0;
   padding: 0;
-
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.035), transparent 30%),
+    var(--background);
   color: var(--foreground);
-
   font-family: Arial, Helvetica, sans-serif;
-
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 /* =========================================================
@@ -59,23 +120,52 @@ body {
 input,
 select,
 textarea {
-  color: #172033;
-  background-color: #ffffff;
+  width: 100%;
+  color: var(--foreground);
+  background-color: var(--card);
+  border-color: var(--border);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--border-strong);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-ring);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
 }
 
 /* Native dropdown visibility fix */
 select {
-  color: #172033;
-  background-color: #ffffff;
+  color: var(--foreground);
+  background-color: var(--card);
   color-scheme: light;
 }
 
 select option {
-  color: #172033;
-  background-color: #ffffff;
+  color: var(--foreground);
+  background-color: var(--card);
 }
 
-/* Placeholder text */
+/* Placeholder */
 input::placeholder,
 textarea::placeholder {
   color: #94a3b8;
@@ -83,15 +173,162 @@ textarea::placeholder {
 }
 
 /* =========================================================
-   FOCUS STATES
+   REUSABLE VISUAL HELPERS
+   These work alongside existing Tailwind classes.
    ========================================================= */
 
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+.zeit-card {
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.zeit-card:hover {
+  border-color: #dbe4ef;
+  box-shadow: var(--shadow-md);
+}
+
+.zeit-card-interactive:hover {
+  transform: translateY(-2px);
+}
+
+.zeit-table {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.zeit-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.zeit-table thead th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.zeit-table tbody tr {
+  transition: background-color 140ms ease;
+}
+
+.zeit-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.zeit-table tbody td {
+  border-top: 1px solid #eef2f7;
+}
+
+.zeit-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.zeit-status-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.zeit-input {
+  min-height: 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.85rem;
+  background: var(--card);
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+}
+
+.zeit-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-ring);
+}
+
+.zeit-btn {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-md);
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.zeit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.zeit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.zeit-btn-primary {
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.18);
+}
+
+.zeit-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 7px 18px rgba(37, 99, 235, 0.24);
+}
+
+.zeit-btn-secondary {
+  border: 1px solid var(--border);
+  background: white;
+  color: #334155;
+  box-shadow: var(--shadow-sm);
+}
+
+.zeit-btn-secondary:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.zeit-btn-danger {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 5px 14px rgba(220, 38, 38, 0.16);
+}
+
+.zeit-btn-success {
+  background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  box-shadow: 0 5px 14px rgba(22, 163, 74, 0.16);
 }
 
 /* =========================================================
@@ -104,12 +341,13 @@ textarea:focus {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #eef2f7;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 8px;
+  border: 2px solid #eef2f7;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -123,4 +361,903 @@ textarea:focus {
 ::selection {
   background: #bfdbfe;
   color: #172033;
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* =========================================================
+   ZEIT CSP — PREMIUM THEME SYSTEM
+   ========================================================= */
+
+:root {
+  --theme-page: #f8f7f4;
+  --theme-page-2: #fffaf3;
+  --theme-surface: #ffffff;
+  --theme-surface-soft: #fffdf9;
+  --theme-border: #ebe5db;
+  --theme-border-strong: #ded5c7;
+  --theme-primary: #f59e0b;
+  --theme-primary-hover: #d97706;
+  --theme-primary-soft: #fff4df;
+  --theme-primary-soft-2: #ffedd5;
+  --theme-secondary: #fb923c;
+  --theme-text: #172033;
+  --theme-heading: #111827;
+  --theme-muted: #6b7280;
+  --theme-sidebar: #fffdf9;
+  --theme-sidebar-border: #ebe5db;
+  --theme-shadow: 0 12px 30px rgba(120, 87, 45, 0.06);
+  --theme-shadow-hover: 0 18px 40px rgba(120, 87, 45, 0.1);
+  --theme-glow: rgba(245, 158, 11, 0.14);
+
+  /* Existing design-system variables follow the active theme. */
+  --background: var(--theme-page);
+  --foreground: var(--theme-text);
+  --primary: var(--theme-primary);
+  --primary-dark: var(--theme-primary-hover);
+  --primary-soft: var(--theme-primary-soft);
+  --primary-ring: var(--theme-glow);
+  --card: var(--theme-surface);
+  --border: var(--theme-border);
+  --border-strong: var(--theme-border-strong);
+  --muted: var(--theme-muted);
+  --muted-light: var(--theme-surface-soft);
+  --muted-lighter: var(--theme-page-2);
+}
+
+:root[data-theme="azure"] {
+  --theme-page: #f4f8ff;
+  --theme-page-2: #eef6ff;
+  --theme-surface: #ffffff;
+  --theme-surface-soft: #f8fbff;
+  --theme-border: #dbe8f7;
+  --theme-border-strong: #c7dbef;
+  --theme-primary: #3b82f6;
+  --theme-primary-hover: #2563eb;
+  --theme-primary-soft: #eff6ff;
+  --theme-primary-soft-2: #dbeafe;
+  --theme-secondary: #06b6d4;
+  --theme-text: #1e293b;
+  --theme-heading: #0f172a;
+  --theme-muted: #64748b;
+  --theme-sidebar: #fbfdff;
+  --theme-sidebar-border: #dbe8f7;
+  --theme-shadow: 0 12px 32px rgba(37, 99, 235, 0.07);
+  --theme-shadow-hover: 0 18px 42px rgba(37, 99, 235, 0.12);
+  --theme-glow: rgba(59, 130, 246, 0.14);
+}
+
+:root[data-theme="finance"] {
+  --theme-page: #f3faf7;
+  --theme-page-2: #ecfdf5;
+  --theme-surface: #ffffff;
+  --theme-surface-soft: #f8fdfb;
+  --theme-border: #d8ebe2;
+  --theme-border-strong: #bfded0;
+  --theme-primary: #10b981;
+  --theme-primary-hover: #059669;
+  --theme-primary-soft: #ecfdf5;
+  --theme-primary-soft-2: #d1fae5;
+  --theme-secondary: #14b8a6;
+  --theme-text: #18312b;
+  --theme-heading: #102a24;
+  --theme-muted: #667a74;
+  --theme-sidebar: #fbfffd;
+  --theme-sidebar-border: #d8ebe2;
+  --theme-shadow: 0 12px 32px rgba(16, 185, 129, 0.07);
+  --theme-shadow-hover: 0 18px 42px rgba(16, 185, 129, 0.12);
+  --theme-glow: rgba(16, 185, 129, 0.14);
+}
+
+:root[data-theme="executive"] {
+  --theme-page: #f7f5fc;
+  --theme-page-2: #f3efff;
+  --theme-surface: #ffffff;
+  --theme-surface-soft: #fbfaff;
+  --theme-border: #e8e1f6;
+  --theme-border-strong: #d8cbed;
+  --theme-primary: #8b5cf6;
+  --theme-primary-hover: #7c3aed;
+  --theme-primary-soft: #f5f3ff;
+  --theme-primary-soft-2: #ede9fe;
+  --theme-secondary: #a78bfa;
+  --theme-text: #27233a;
+  --theme-heading: #171326;
+  --theme-muted: #706b82;
+  --theme-sidebar: #fdfcff;
+  --theme-sidebar-border: #e8e1f6;
+  --theme-shadow: 0 12px 32px rgba(124, 58, 237, 0.07);
+  --theme-shadow-hover: 0 18px 42px rgba(124, 58, 237, 0.12);
+  --theme-glow: rgba(139, 92, 246, 0.14);
+}
+
+:root[data-theme="dark"] {
+  --theme-page: #0b1020;
+  --theme-page-2: #10182c;
+  --theme-surface: #121a2b;
+  --theme-surface-soft: #172237;
+  --theme-border: #26344c;
+  --theme-border-strong: #34445f;
+  --theme-primary: #38bdf8;
+  --theme-primary-hover: #0ea5e9;
+  --theme-primary-soft: #102b3b;
+  --theme-primary-soft-2: #123b50;
+  --theme-secondary: #f59e0b;
+  --theme-text: #dbe7f5;
+  --theme-heading: #f8fbff;
+  --theme-muted: #91a3bc;
+  --theme-sidebar: #0c1424;
+  --theme-sidebar-border: #26344c;
+  --theme-shadow: 0 16px 40px rgba(0, 0, 0, 0.24);
+  --theme-shadow-hover: 0 22px 50px rgba(0, 0, 0, 0.34);
+  --theme-glow: rgba(56, 189, 248, 0.15);
+}
+
+/* Keep the existing design system and reusable helpers in sync with the theme. */
+html[data-theme] {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme] body {
+  background:
+    radial-gradient(
+      circle at 15% 0%,
+      var(--theme-page-2) 0%,
+      var(--theme-page) 38%,
+      var(--theme-page) 100%
+    ) !important;
+  color: var(--theme-text);
+}
+
+html[data-theme] .zeit-card {
+  background: var(--theme-surface);
+  border-color: var(--theme-border);
+  box-shadow: var(--theme-shadow);
+}
+
+html[data-theme] .zeit-card:hover {
+  border-color: var(--theme-border-strong);
+  box-shadow: var(--theme-shadow-hover);
+}
+
+html[data-theme] .zeit-table {
+  background: var(--theme-surface);
+  border-color: var(--theme-border);
+  box-shadow: var(--theme-shadow);
+}
+
+html[data-theme] .zeit-table thead th {
+  background: var(--theme-surface-soft);
+  color: var(--theme-muted);
+}
+
+html[data-theme] .zeit-table tbody tr:hover {
+  background: var(--theme-primary-soft);
+}
+
+html[data-theme] .zeit-table tbody td {
+  border-top-color: var(--theme-border);
+}
+
+html[data-theme] .zeit-input {
+  background: var(--theme-surface);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+
+html[data-theme] .zeit-btn-primary {
+  background: linear-gradient(
+    180deg,
+    var(--theme-primary) 0%,
+    var(--theme-primary-hover) 100%
+  );
+  box-shadow: 0 7px 18px var(--theme-glow);
+}
+
+html[data-theme] .zeit-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    var(--theme-primary-hover) 0%,
+    color-mix(in srgb, var(--theme-primary-hover) 82%, black) 100%
+  );
+}
+
+html[data-theme] .zeit-btn-secondary {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+html[data-theme] .zeit-btn-secondary:hover:not(:disabled) {
+  background: var(--theme-primary-soft);
+  border-color: var(--theme-border-strong);
+}
+
+/* Theme selector. */
+.zeit-theme-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--theme-border);
+  border-radius: 14px;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: var(--theme-shadow);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.zeit-theme-trigger:hover {
+  transform: translateY(-1px);
+  border-color: var(--theme-primary);
+  box-shadow: var(--theme-shadow-hover);
+}
+
+.zeit-theme-trigger-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zeit-theme-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 100;
+  width: 320px;
+  padding: 10px;
+  border: 1px solid var(--theme-border);
+  border-radius: 20px;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(18px);
+  animation: zeitThemeMenuIn 160ms ease-out;
+}
+
+@keyframes zeitThemeMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.zeit-theme-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid transparent;
+  border-radius: 15px;
+  padding: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.zeit-theme-option:hover,
+.zeit-theme-option-active {
+  background: var(--theme-primary-soft);
+  border-color: var(--theme-border);
+}
+
+.zeit-theme-option:hover {
+  transform: translateY(-1px);
+}
+
+/* Existing blue Tailwind utilities become the active theme accent. */
+html[data-theme] .bg-blue-600 {
+  background-color: var(--theme-primary) !important;
+}
+
+html[data-theme] .hover\:bg-blue-700:hover {
+  background-color: var(--theme-primary-hover) !important;
+}
+
+html[data-theme] .text-blue-600,
+html[data-theme] .text-blue-700,
+html[data-theme] .text-blue-800 {
+  color: var(--theme-primary) !important;
+}
+
+html[data-theme] .bg-blue-50 {
+  background-color: var(--theme-primary-soft) !important;
+}
+
+html[data-theme] .border-blue-100,
+html[data-theme] .border-blue-200 {
+  border-color: color-mix(in srgb, var(--theme-primary) 22%, white) !important;
+}
+
+html[data-theme] .ring-blue-100,
+html[data-theme] .ring-blue-200 {
+  --tw-ring-color: var(--theme-glow) !important;
+}
+
+html[data-theme] .focus\:border-blue-500:focus {
+  border-color: var(--theme-primary) !important;
+}
+
+html[data-theme] .focus\:ring-blue-100:focus {
+  --tw-ring-color: var(--theme-glow) !important;
+}
+
+/* Active sidebar item when Sidebar.tsx uses theme-nav-active. */
+html[data-theme="warm"] .theme-nav-active {
+  background: linear-gradient(135deg, #f59e0b, #fb923c) !important;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.18);
+}
+
+html[data-theme="azure"] .theme-nav-active {
+  background: linear-gradient(135deg, #3b82f6, #06b6d4) !important;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.18);
+}
+
+html[data-theme="finance"] .theme-nav-active {
+  background: linear-gradient(135deg, #10b981, #14b8a6) !important;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.18);
+}
+
+html[data-theme="executive"] .theme-nav-active {
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa) !important;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.18);
+}
+
+html[data-theme="dark"] .theme-nav-active {
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8) !important;
+  box-shadow: 0 8px 22px rgba(14, 165, 233, 0.2);
+}
+
+/* Dark theme surfaces and text. */
+html[data-theme="dark"] .bg-white {
+  background-color: var(--theme-surface) !important;
+}
+
+html[data-theme="dark"] .bg-slate-50,
+html[data-theme="dark"] .bg-gray-50 {
+  background-color: var(--theme-surface-soft) !important;
+}
+
+html[data-theme="dark"] .bg-gray-100,
+html[data-theme="dark"] .bg-slate-100 {
+  background-color: #1d2940 !important;
+}
+
+html[data-theme="dark"] .border-slate-100,
+html[data-theme="dark"] .border-slate-200,
+html[data-theme="dark"] .border-gray-100,
+html[data-theme="dark"] .border-gray-200 {
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] .text-slate-950,
+html[data-theme="dark"] .text-slate-900,
+html[data-theme="dark"] .text-gray-950,
+html[data-theme="dark"] .text-gray-900 {
+  color: var(--theme-heading) !important;
+}
+
+html[data-theme="dark"] .text-slate-500,
+html[data-theme="dark"] .text-slate-400,
+html[data-theme="dark"] .text-gray-500,
+html[data-theme="dark"] .text-gray-600 {
+  color: var(--theme-muted) !important;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background-color: #0d1627 !important;
+  color: #f8fbff !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: #71829a !important;
+}
+
+html[data-theme="dark"] header {
+  background: rgba(18, 26, 43, 0.94) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] .zeit-theme-trigger {
+  background: #162238;
+  border-color: var(--theme-border);
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-color: #0f172a;
+}
+
+html[data-theme="dark"] ::selection {
+  background: #075985;
+  color: #f8fbff;
+}
+
+html[data-theme="dark"] :focus-visible {
+  outline-color: rgba(56, 189, 248, 0.35);
+}
+
+/* =========================================================
+   MIDNIGHT ORANGE — Dark workspace with friendly light-orange accents
+   ========================================================= */
+
+:root[data-theme="midnight-orange"] {
+  --theme-page: #11100e;
+  --theme-page-2: #1b1712;
+  --theme-surface: #191714;
+  --theme-surface-soft: #211d17;
+  --theme-border: #393027;
+  --theme-border-strong: #514438;
+  --theme-primary: #ffb35c;
+  --theme-primary-hover: #ffd09a;
+  --theme-primary-soft: #302317;
+  --theme-primary-soft-2: #3c2a19;
+  --theme-secondary: #f59e0b;
+  --theme-text: #eadfd2;
+  --theme-heading: #fff8ef;
+  --theme-muted: #a99a89;
+  --theme-sidebar: #15130f;
+  --theme-sidebar-border: #393027;
+  --theme-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  --theme-shadow-hover: 0 24px 55px rgba(0, 0, 0, 0.38);
+  --theme-glow: rgba(255, 179, 92, 0.16);
+}
+
+:root[data-theme="midnight-orange"] {
+  --background: var(--theme-page);
+  --foreground: var(--theme-text);
+  --primary: var(--theme-primary);
+  --primary-dark: var(--theme-primary-hover);
+  --primary-soft: var(--theme-primary-soft);
+  --primary-ring: var(--theme-glow);
+  --card: var(--theme-surface);
+  --border: var(--theme-border);
+  --border-strong: var(--theme-border-strong);
+  --muted: var(--theme-muted);
+  --muted-light: var(--theme-surface-soft);
+  --muted-lighter: var(--theme-page-2);
+}
+
+html[data-theme="midnight-orange"] {
+  color-scheme: dark;
+}
+
+html[data-theme="midnight-orange"] body {
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      #241b12 0%,
+      var(--theme-page) 42%,
+      var(--theme-page) 100%
+    ) !important;
+  color: var(--theme-text);
+}
+
+html[data-theme="midnight-orange"] .zeit-card,
+html[data-theme="midnight-orange"] .zeit-table,
+html[data-theme="midnight-orange"] .zeit-input,
+html[data-theme="midnight-orange"] .zeit-btn-secondary {
+  background: var(--theme-surface);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+
+html[data-theme="midnight-orange"] .zeit-table thead th {
+  background: var(--theme-surface-soft);
+  color: var(--theme-muted);
+}
+
+html[data-theme="midnight-orange"] .zeit-table tbody td {
+  border-top-color: var(--theme-border);
+}
+
+html[data-theme="midnight-orange"] .zeit-table tbody tr:hover,
+html[data-theme="midnight-orange"] .zeit-theme-option:hover,
+html[data-theme="midnight-orange"] .zeit-theme-option-active {
+  background: var(--theme-primary-soft);
+}
+
+html[data-theme="midnight-orange"] .zeit-btn-primary {
+  background: linear-gradient(135deg, #ffb35c, #ffd09a);
+  color: #2b2118;
+  box-shadow: 0 8px 22px rgba(255, 179, 92, 0.16);
+}
+
+html[data-theme="midnight-orange"] .zeit-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ffc477, #ffdaa9);
+}
+
+html[data-theme="midnight-orange"] .bg-white {
+  background-color: var(--theme-surface) !important;
+}
+
+html[data-theme="midnight-orange"] .bg-slate-50,
+html[data-theme="midnight-orange"] .bg-gray-50 {
+  background-color: var(--theme-surface-soft) !important;
+}
+
+html[data-theme="midnight-orange"] .bg-slate-100,
+html[data-theme="midnight-orange"] .bg-gray-100 {
+  background-color: #2a241c !important;
+}
+
+html[data-theme="midnight-orange"] .text-white {
+  color: var(--theme-heading) !important;
+}
+
+html[data-theme="midnight-orange"] .text-slate-950,
+html[data-theme="midnight-orange"] .text-slate-900,
+html[data-theme="midnight-orange"] .text-gray-950,
+html[data-theme="midnight-orange"] .text-gray-900 {
+  color: var(--theme-heading) !important;
+}
+
+html[data-theme="midnight-orange"] .text-slate-700,
+html[data-theme="midnight-orange"] .text-slate-600,
+html[data-theme="midnight-orange"] .text-gray-700,
+html[data-theme="midnight-orange"] .text-gray-600 {
+  color: var(--theme-text) !important;
+}
+
+html[data-theme="midnight-orange"] .text-slate-500,
+html[data-theme="midnight-orange"] .text-slate-400,
+html[data-theme="midnight-orange"] .text-gray-500,
+html[data-theme="midnight-orange"] .text-gray-400 {
+  color: var(--theme-muted) !important;
+}
+
+html[data-theme="midnight-orange"] .border-slate-100,
+html[data-theme="midnight-orange"] .border-slate-200,
+html[data-theme="midnight-orange"] .border-slate-300,
+html[data-theme="midnight-orange"] .border-gray-100,
+html[data-theme="midnight-orange"] .border-gray-200,
+html[data-theme="midnight-orange"] .border-gray-300 {
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="midnight-orange"] .bg-blue-50 {
+  background-color: var(--theme-primary-soft) !important;
+}
+
+html[data-theme="midnight-orange"] .bg-blue-100 {
+  background-color: var(--theme-primary-soft-2) !important;
+}
+
+html[data-theme="midnight-orange"] .bg-blue-500,
+html[data-theme="midnight-orange"] .bg-blue-600,
+html[data-theme="midnight-orange"] .bg-blue-700 {
+  background-color: var(--theme-primary) !important;
+}
+
+html[data-theme="midnight-orange"] .hover\\:bg-blue-600:hover,
+html[data-theme="midnight-orange"] .hover\\:bg-blue-700:hover {
+  background-color: var(--theme-primary-hover) !important;
+}
+
+html[data-theme="midnight-orange"] .text-blue-500,
+html[data-theme="midnight-orange"] .text-blue-600,
+html[data-theme="midnight-orange"] .text-blue-700,
+html[data-theme="midnight-orange"] .text-blue-800 {
+  color: var(--theme-primary) !important;
+}
+
+html[data-theme="midnight-orange"] .theme-nav-active {
+  background: linear-gradient(135deg, #ffb35c, #ffd09a) !important;
+  color: #2b2118 !important;
+  box-shadow: 0 8px 22px rgba(255, 179, 92, 0.16);
+}
+
+html[data-theme="midnight-orange"] aside {
+  background-color: var(--theme-sidebar) !important;
+  border-color: var(--theme-sidebar-border) !important;
+}
+
+html[data-theme="midnight-orange"] header {
+  background: rgba(25, 23, 20, 0.94) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="midnight-orange"] input,
+html[data-theme="midnight-orange"] select,
+html[data-theme="midnight-orange"] textarea {
+  background-color: #12100e !important;
+  color: var(--theme-heading) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="midnight-orange"] input::placeholder,
+html[data-theme="midnight-orange"] textarea::placeholder {
+  color: #8e7d69 !important;
+}
+
+html[data-theme="midnight-orange"] .zeit-theme-trigger {
+  background: #211d17;
+  border-color: var(--theme-border);
+}
+
+html[data-theme="midnight-orange"] .zeit-theme-menu {
+  background: #191714;
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+
+html[data-theme="midnight-orange"] ::-webkit-scrollbar-track {
+  background: #11100e;
+}
+
+html[data-theme="midnight-orange"] ::-webkit-scrollbar-thumb {
+  background: #514438;
+  border-color: #11100e;
+}
+
+html[data-theme="midnight-orange"] ::selection {
+  background: #6b4523;
+  color: #fff8ef;
+}
+
+html[data-theme="midnight-orange"] :focus-visible {
+  outline-color: rgba(255, 179, 92, 0.35);
+}
+/* =========================================================
+   ZEIT CSP — COMPACT METRIC STRIP
+   Used by Dashboard, Invoices and Finance pages
+   ========================================================= */
+
+.zeit-metric-strip {
+  width: 100%;
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+
+  background: var(--card);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.zeit-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+
+  width: 100%;
+}
+
+.zeit-metric {
+  position: relative;
+
+  display: flex;
+  min-width: 0;
+  align-items: center;
+
+  gap: 0.85rem;
+
+  min-height: 94px;
+
+  padding: 1rem 1.1rem;
+
+  background: var(--card);
+
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.zeit-metric:hover {
+  background: var(--primary-soft);
+}
+
+.zeit-metric-icon {
+  display: flex;
+
+  width: 42px;
+  height: 42px;
+
+  flex: 0 0 auto;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  font-size: 18px;
+}
+
+.zeit-metric-label {
+  margin: 0;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  line-height: 1.2;
+
+  letter-spacing: 0.06em;
+
+  text-transform: uppercase;
+
+  color: var(--muted);
+}
+
+.zeit-metric-value {
+  margin: 0.25rem 0 0;
+
+  overflow: hidden;
+
+  font-size: 1.2rem;
+  font-weight: 800;
+
+  line-height: 1.25;
+
+  letter-spacing: -0.02em;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: var(--foreground);
+}
+
+.zeit-metric-hint {
+  margin: 0.2rem 0 0;
+
+  overflow: hidden;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  line-height: 1.25;
+
+  color: var(--muted);
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* Desktop metric layout */
+
+@media (min-width: 1280px) {
+  .zeit-metric-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .zeit-metric {
+    min-height: 92px;
+  }
+
+  .zeit-metric:nth-child(6n) {
+    border-right: 0;
+  }
+
+  .zeit-metric:nth-last-child(-n + 6) {
+    border-bottom: 0;
+  }
+}
+
+
+/* Tablet */
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  .zeit-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .zeit-metric:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .zeit-metric:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+}
+
+
+/* Mobile */
+
+@media (max-width: 767px) {
+  .zeit-metric {
+    min-height: 82px;
+  }
+
+  .zeit-metric:nth-child(n) {
+    border-right: 0;
+  }
+
+  .zeit-metric:last-child {
+    border-bottom: 0;
+  }
+}
+
+
+/* =========================================================
+   THEME SUPPORT FOR METRIC STRIP
+   ========================================================= */
+
+html[data-theme] .zeit-metric-strip {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+html[data-theme] .zeit-metric {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+html[data-theme] .zeit-metric:hover {
+  background: var(--primary-soft);
+}
+
+html[data-theme] .zeit-metric-label,
+html[data-theme] .zeit-metric-hint {
+  color: var(--muted);
+}
+
+html[data-theme] .zeit-metric-value {
+  color: var(--foreground);
+}
+
+
+/* =========================================================
+   DARK THEMES
+   ========================================================= */
+
+html[data-theme="dark"] .zeit-metric,
+html[data-theme="midnight-orange"] .zeit-metric {
+  background: var(--card);
+}
+
+html[data-theme="dark"] .zeit-metric:hover,
+html[data-theme="midnight-orange"] .zeit-metric:hover {
+  background: var(--primary-soft);
 }
