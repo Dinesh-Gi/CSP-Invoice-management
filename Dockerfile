@@ -4,10 +4,14 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 
+RUN DATABASE_URL="postgresql://postgres:postgres@localhost:5432/zeit_csp" AUTH_SECRET="docker-build-only-secret" npx prisma generate
+
+RUN DATABASE_URL="postgresql://postgres:postgres@localhost:5432/zeit_csp" AUTH_SECRET="docker-build-only-secret" npm run build
+
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
