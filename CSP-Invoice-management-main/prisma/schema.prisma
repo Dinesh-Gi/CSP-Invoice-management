@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+}
+
+model Distributor {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+}
+
+model Transaction {
+  id Int @id @default(autoincrement())
+
+  customerId Int
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  distributorId Int?
+  distributor   Distributor? @relation(fields: [distributorId], references: [id])
+
+  transactionDate DateTime
+  poNumber        String?
+
+  transactionType String?
+
+  buyPrice     Decimal  @db.Decimal(18, 4)
+  sellPrice    Decimal  @db.Decimal(18, 4)
+  proratePrice Decimal? @db.Decimal(18, 4)
+
+  subscriptionStart DateTime?
+  subscriptionEnd   DateTime?
+
+  prorateDays Int?
+  periodLabel String?
+
+  quantity Int
+
+  invoiceStatus String?
+  paymentStatus String?
+
+  remarks String?
+
+  sourceRow Int? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("VIEWER")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
