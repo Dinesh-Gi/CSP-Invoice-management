@@ -6,6 +6,7 @@ services:
       - "8080:3000"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/zeit_csp
+      AUTH_SECRET: ZEIT-CSP-Tracker-Local-Auth-2026-Change-This-Secret
     depends_on:
       - db
 
