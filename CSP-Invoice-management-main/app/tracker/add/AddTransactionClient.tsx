@@ -28,15 +28,6 @@ export default function AddTransactionPage() {
   const [addingCustomer, setAddingCustomer] =
   useState(false);
 
-  const [showAddProduct, setShowAddProduct] =
-  useState(false);
-
-  const [newProductName, setNewProductName] =
-  useState("");
-
-  const [addingProduct, setAddingProduct] =
-  useState(false);
-
   const [form, setForm] = useState({
     customerId: "",
     transactionDate: new Date().toISOString().split("T")[0],
@@ -203,66 +194,6 @@ export default function AddTransactionPage() {
       );
     } finally {
       setAddingCustomer(false);
-    }
-  }
-
-  async function handleAddProduct() {
-    const productName = newProductName.trim();
-
-    if (!productName) {
-      setError("Please enter the product name.");
-      return;
-    }
-
-    setAddingProduct(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: productName,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(
-          result.message || "Failed to add product."
-        );
-      }
-
-      const product = result.product;
-
-      setProducts((current) => {
-        if (current.some((item) => item.id === product.id)) {
-          return current;
-        }
-
-        return [...current, product].sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
-      });
-
-      // Automatically select the newly created product.
-      updateField("productId", String(product.id));
-
-      setNewProductName("");
-      setShowAddProduct(false);
-    } catch (err) {
-      console.error(err);
-
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to add product."
-      );
-    } finally {
-      setAddingProduct(false);
     }
   }
 
@@ -590,24 +521,9 @@ export default function AddTransactionPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <label className="text-sm font-semibold text-gray-700">
-                      License Description *
-                    </label>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAddProduct((current) => !current);
-                        setError("");
-                      }}
-                      className="shrink-0 text-sm font-semibold text-orange-500 transition hover:text-orange-600"
-                    >
-                      {showAddProduct
-                        ? "− Close"
-                        : "+ Add Product"}
-                    </button>
-                  </div>
+                  <label className="mb-2 block text-sm font-semibold text-gray-700">
+                    License Description *
+                  </label>
 
                   <select
                     value={form.productId}
@@ -617,7 +533,7 @@ export default function AddTransactionPage() {
                         e.target.value
                       )
                     }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm"
                   >
                     <option value="">
                       Select License / Product
@@ -632,63 +548,6 @@ export default function AddTransactionPage() {
                       </option>
                     ))}
                   </select>
-
-                  {showAddProduct && (
-                    <div className="mt-3 rounded-xl border border-orange-200 bg-orange-50/40 p-4">
-                      <div className="mb-3">
-                        <h3 className="text-sm font-bold text-gray-900">
-                          Add New Product
-                        </h3>
-
-                        <p className="mt-1 text-xs text-gray-500">
-                          Add a new license or product name.
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col gap-3 sm:flex-row">
-                        <input
-                          type="text"
-                          value={newProductName}
-                          onChange={(e) =>
-                            setNewProductName(e.target.value)
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleAddProduct();
-                            }
-                          }}
-                          placeholder="Enter product / license name"
-                          autoFocus
-                          className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                        />
-
-                        <button
-                          type="button"
-                          disabled={addingProduct}
-                          onClick={handleAddProduct}
-                          className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {addingProduct
-                            ? "Adding..."
-                            : "Add Product"}
-                        </button>
-
-                        <button
-                          type="button"
-                          disabled={addingProduct}
-                          onClick={() => {
-                            setShowAddProduct(false);
-                            setNewProductName("");
-                            setError("");
-                          }}
-                          className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </section>

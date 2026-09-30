@@ -1,15 +1,17 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 type Option = {
   id: number;
   name: string;
 };
 
-export default function AddTransactionPage() {
+export default function EditTransactionPage() {
   const router = useRouter();
+  const params = useParams();
+  const transactionId = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [customers, setCustomers] = useState<Option[]>([]);
   const [products, setProducts] = useState<Option[]>([]);
@@ -26,15 +28,6 @@ export default function AddTransactionPage() {
   useState("");
 
   const [addingCustomer, setAddingCustomer] =
-  useState(false);
-
-  const [showAddProduct, setShowAddProduct] =
-  useState(false);
-
-  const [newProductName, setNewProductName] =
-  useState("");
-
-  const [addingProduct, setAddingProduct] =
   useState(false);
 
   const [form, setForm] = useState({
@@ -56,29 +49,93 @@ export default function AddTransactionPage() {
   });
 
   useEffect(() => {
-    async function loadOptions() {
+    async function loadData() {
       try {
-        const response = await fetch("/api/master-data");
+        setLoadingOptions(true);
 
-        if (!response.ok) {
+        const [masterResponse, transactionsResponse] =
+          await Promise.all([
+            fetch("/api/master-data"),
+            fetch("/api/transactions"),
+          ]);
+
+        if (!masterResponse.ok) {
           throw new Error("Failed to load master data.");
         }
 
-        const data = await response.json();
+        if (!transactionsResponse.ok) {
+          throw new Error("Failed to load transaction data.");
+        }
 
-        setCustomers(data.customers ?? []);
-        setProducts(data.products ?? []);
-        setDistributors(data.distributors ?? []);
+        const masterData = await masterResponse.json();
+        const transactionsData = await transactionsResponse.json();
+
+        setCustomers(masterData.customers ?? []);
+        setProducts(masterData.products ?? []);
+        setDistributors(masterData.distributors ?? []);
+
+        const transaction = (transactionsData.transactions ?? []).find(
+          (item: { id: number }) => item.id === Number(transactionId)
+        );
+
+        if (!transaction) {
+          throw new Error("Transaction not found.");
+        }
+
+        const toDateInput = (value: string | null | undefined) => {
+          if (!value) return "";
+          return new Date(value).toISOString().split("T")[0];
+        };
+
+        setForm({
+          customerId: String(
+            transaction.customerId ??
+              customers.find((item) => item.name === transaction.customer)?.id ??
+              ""
+          ),
+          transactionDate: toDateInput(transaction.date),
+          poNumber: transaction.poNumber ?? "",
+          transactionType: transaction.transactionType ?? "",
+          productId: String(
+            transaction.productId ??
+              products.find((item) => item.name === transaction.product)?.id ??
+              ""
+          ),
+          buyPrice: String(transaction.buyPrice ?? ""),
+          sellPrice: String(transaction.sellPrice ?? ""),
+          proratePrice:
+            transaction.proratePrice !== null &&
+            transaction.proratePrice !== undefined
+              ? String(transaction.proratePrice)
+              : "",
+          subscriptionStart: toDateInput(transaction.subscriptionStart),
+          subscriptionEnd: toDateInput(transaction.subscriptionEnd),
+          quantity: String(transaction.quantity ?? 1),
+          distributorId: String(
+            transaction.distributorId ??
+              distributors.find((item) => item.name === transaction.distributor)?.id ??
+              ""
+          ),
+          invoiceStatus: transaction.invoiceStatus ?? "",
+          paymentStatus: transaction.paymentStatus ?? "",
+          remarks: transaction.remarks ?? "",
+        });
       } catch (err) {
         console.error(err);
-        setError("Unable to load customer/product/distributor data.");
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load transaction data."
+        );
       } finally {
         setLoadingOptions(false);
       }
     }
 
-    loadOptions();
-  }, []);
+    if (transactionId) {
+      loadData();
+    }
+  }, [transactionId]);
 
   function updateField(
     field: keyof typeof form,
@@ -206,66 +263,6 @@ export default function AddTransactionPage() {
     }
   }
 
-  async function handleAddProduct() {
-    const productName = newProductName.trim();
-
-    if (!productName) {
-      setError("Please enter the product name.");
-      return;
-    }
-
-    setAddingProduct(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: productName,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(
-          result.message || "Failed to add product."
-        );
-      }
-
-      const product = result.product;
-
-      setProducts((current) => {
-        if (current.some((item) => item.id === product.id)) {
-          return current;
-        }
-
-        return [...current, product].sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
-      });
-
-      // Automatically select the newly created product.
-      updateField("productId", String(product.id));
-
-      setNewProductName("");
-      setShowAddProduct(false);
-    } catch (err) {
-      console.error(err);
-
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to add product."
-      );
-    } finally {
-      setAddingProduct(false);
-    }
-  }
-
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
@@ -275,6 +272,10 @@ export default function AddTransactionPage() {
     setError("");
 
     try {
+      if (!transactionId) {
+        throw new Error("Transaction ID is missing.");
+      }
+
       if (!form.customerId) {
         throw new Error("Please select a customer.");
       }
@@ -306,11 +307,12 @@ export default function AddTransactionPage() {
       const response = await fetch(
         "/api/transactions",
         {
-          method: "POST",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            id: Number(transactionId),
             customerId: Number(form.customerId),
             productId: Number(form.productId),
             distributorId:
@@ -367,7 +369,7 @@ export default function AddTransactionPage() {
       if (!response.ok || !result.success) {
         throw new Error(
           result.message ||
-            "Failed to create transaction."
+            "Failed to update transaction."
         );
       }
 
@@ -379,7 +381,7 @@ export default function AddTransactionPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to save transaction."
+          : "Failed to update transaction."
       );
     } finally {
       setSaving(false);
@@ -399,11 +401,11 @@ export default function AddTransactionPage() {
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              Add Transaction
+              Edit Transaction
             </h1>
 
             <p className="mt-1 text-sm text-gray-500">
-              Add a new CSP transaction to the tracker
+              Update the CSP transaction details
             </p>
           </div>
 
@@ -427,7 +429,7 @@ export default function AddTransactionPage() {
         {loadingOptions ? (
           <div className="rounded-2xl border bg-white p-10 text-center shadow-sm">
             <p className="text-gray-500">
-              Loading form data...
+              Loading transaction data...
             </p>
           </div>
         ) : (
@@ -590,24 +592,9 @@ export default function AddTransactionPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <label className="text-sm font-semibold text-gray-700">
-                      License Description *
-                    </label>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAddProduct((current) => !current);
-                        setError("");
-                      }}
-                      className="shrink-0 text-sm font-semibold text-orange-500 transition hover:text-orange-600"
-                    >
-                      {showAddProduct
-                        ? "− Close"
-                        : "+ Add Product"}
-                    </button>
-                  </div>
+                  <label className="mb-2 block text-sm font-semibold text-gray-700">
+                    License Description *
+                  </label>
 
                   <select
                     value={form.productId}
@@ -617,7 +604,7 @@ export default function AddTransactionPage() {
                         e.target.value
                       )
                     }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm"
                   >
                     <option value="">
                       Select License / Product
@@ -632,63 +619,6 @@ export default function AddTransactionPage() {
                       </option>
                     ))}
                   </select>
-
-                  {showAddProduct && (
-                    <div className="mt-3 rounded-xl border border-orange-200 bg-orange-50/40 p-4">
-                      <div className="mb-3">
-                        <h3 className="text-sm font-bold text-gray-900">
-                          Add New Product
-                        </h3>
-
-                        <p className="mt-1 text-xs text-gray-500">
-                          Add a new license or product name.
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col gap-3 sm:flex-row">
-                        <input
-                          type="text"
-                          value={newProductName}
-                          onChange={(e) =>
-                            setNewProductName(e.target.value)
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleAddProduct();
-                            }
-                          }}
-                          placeholder="Enter product / license name"
-                          autoFocus
-                          className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                        />
-
-                        <button
-                          type="button"
-                          disabled={addingProduct}
-                          onClick={handleAddProduct}
-                          className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {addingProduct
-                            ? "Adding..."
-                            : "Add Product"}
-                        </button>
-
-                        <button
-                          type="button"
-                          disabled={addingProduct}
-                          onClick={() => {
-                            setShowAddProduct(false);
-                            setNewProductName("");
-                            setError("");
-                          }}
-                          className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </section>
@@ -1047,7 +977,7 @@ export default function AddTransactionPage() {
               >
                 {saving
                   ? "Saving..."
-                  : "Save Transaction"}
+                  : "Update Transaction"}
               </button>
             </section>
           </form>
