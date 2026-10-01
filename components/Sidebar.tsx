@@ -18,14 +18,19 @@ type SessionUser = {
     | string;
 };
 
+type SidebarProps = {
+  collapsed: boolean;
+  onToggle: () => void;
+};
+
 function Icon({ name }: { name: string }) {
   const common = {
-    width: 20,
-    height: 20,
+    width: 16,
+    height: 16,
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: 1.9,
+    strokeWidth: 1.8,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
   };
@@ -112,6 +117,28 @@ function Icon({ name }: { name: string }) {
   }
 }
 
+function ChevronIcon({ collapsed }: { collapsed: boolean }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {collapsed ? (
+        <path d="m9 18 6-6-6-6" />
+      ) : (
+        <path d="m15 18-6-6 6-6" />
+      )}
+    </svg>
+  );
+}
+
 const workspaceItems = [
   {
     href: "/",
@@ -145,12 +172,14 @@ const workspaceItems = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({
+  collapsed,
+  onToggle,
+}: SidebarProps) {
   const pathname = usePathname();
 
-  const [user, setUser] = useState<SessionUser | null>(null);
-
-  const [collapsed, setCollapsed] = useState(false);
+  const [user, setUser] =
+    useState<SessionUser | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -184,29 +213,45 @@ export default function Sidebar() {
       className={[
         "fixed inset-y-0 left-0 z-40 flex flex-col",
         "border-r border-slate-200 bg-white",
-        "shadow-[4px_0_18px_rgba(15,23,42,0.04)]",
-        "transition-all duration-300 ease-in-out",
-        collapsed ? "w-[72px]" : "w-72",
+        "transition-[width] duration-200 ease-in-out",
+        collapsed ? "w-[64px]" : "w-[232px]",
       ].join(" ")}
     >
-      {/* =====================================================
-          BRAND HEADER
-      ===================================================== */}
-
+      {/* BRAND */}
       <div
         className={[
-          "relative border-t-4 border-amber-500 pb-5 pt-6",
-          "transition-all duration-300",
-          collapsed ? "px-2" : "px-5",
+          "relative border-t-[3px] border-amber-500",
+          "border-b border-slate-100",
+          collapsed
+            ? "flex h-[58px] items-center justify-center"
+            : "flex h-[58px] items-center px-4",
         ].join(" ")}
       >
-        {/* Collapse Button */}
+        {collapsed ? (
+          <div
+            className="
+              flex h-8 w-8 items-center justify-center
+              rounded-lg bg-slate-950
+              text-[11px] font-black tracking-tight text-white
+            "
+          >
+            ZE
+          </div>
+        ) : (
+          <Image
+            src="/ziniosedge-logo.png"
+            alt="ZiniosEdge"
+            width={180}
+            height={54}
+            priority
+            className="h-auto w-[165px] object-contain"
+          />
+        )}
 
+        {/* COLLAPSE */}
         <button
           type="button"
-          onClick={() =>
-            setCollapsed((value) => !value)
-          }
+          onClick={onToggle}
           aria-label={
             collapsed
               ? "Expand sidebar"
@@ -217,111 +262,79 @@ export default function Sidebar() {
               ? "Expand sidebar"
               : "Collapse sidebar"
           }
-          className={[
-            "absolute -right-3 top-7 z-50",
-            "flex h-7 w-7 items-center justify-center",
-            "rounded-full border border-slate-200 bg-white",
-            "text-slate-500 shadow-sm",
-            "transition hover:bg-amber-50 hover:text-amber-600",
-          ].join(" ")}
+          className="
+            absolute right-[-11px] top-1/2
+            flex h-[22px] w-[22px]
+            -translate-y-1/2
+            items-center justify-center
+            rounded-full
+            border border-slate-200
+            bg-white
+            text-slate-500
+            shadow-sm
+            transition
+            hover:border-amber-300
+            hover:bg-amber-50
+            hover:text-amber-600
+          "
         >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            {collapsed ? (
-              <path d="M9 18l6-6-6-6" />
-            ) : (
-              <path d="M15 18l-6-6 6-6" />
-            )}
-          </svg>
+          <ChevronIcon collapsed={collapsed} />
         </button>
-
-        {/* Logo */}
-
-        <div
-          className={[
-            "flex items-center justify-center",
-            "overflow-hidden transition-all duration-300",
-            collapsed ? "h-9" : "h-auto",
-          ].join(" ")}
-        >
-          {collapsed ? (
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-sm font-black text-white"
-              title="ZiniosEdge"
-            >
-              ZE
-            </div>
-          ) : (
-            <Image
-              src="/ziniosedge-logo.png"
-              alt="ZiniosEdge"
-              width={245}
-              height={72}
-              priority
-              className="h-auto w-[225px] object-contain"
-            />
-          )}
-        </div>
-
-        {/* Subtitle */}
-
-        {!collapsed && (
-          <p className="mt-2 pl-1 text-[12px] font-bold uppercase tracking-[0.22em] text-slate-400">
-            CSP Management
-          </p>
-        )}
       </div>
 
-      {/* =====================================================
-          WORKSPACE CARD
-      ===================================================== */}
+      {/* WORKSPACE STATUS */}
+      <div
+        className={
+          collapsed
+            ? "px-2 py-2"
+            : "px-3 py-2"
+        }
+      >
+        <div
+          title={
+            collapsed
+              ? "ZEIT CSP Tracker"
+              : undefined
+          }
+          className={[
+            "border border-amber-100 bg-[#fffaf0]",
+            collapsed
+              ? "flex h-8 items-center justify-center rounded-md"
+              : "flex h-8 items-center gap-2 rounded-md px-2",
+          ].join(" ")}
+        >
+          <span
+            className="
+              h-2 w-2 shrink-0 rounded-full
+              bg-emerald-500
+            "
+          />
 
-      {!collapsed && (
-        <div className="px-4 pb-5">
-          <div className="rounded-2xl border border-amber-100 bg-[#fffaf0] px-4 py-4">
-            <div className="flex items-center gap-3">
-              <span className="h-3 w-3 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_0_5px_rgba(16,185,129,0.08)]" />
-
-              <div className="min-w-0">
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-amber-600">
-                  Workspace
-                </p>
-
-                <p className="truncate text-sm font-bold text-slate-700">
-                  ZEIT CSP Tracker
-                </p>
-              </div>
-            </div>
-          </div>
+          {!collapsed && (
+            <span className="truncate text-[11px] font-semibold text-slate-700">
+              ZEIT CSP Tracker
+            </span>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* =====================================================
-          NAVIGATION
-      ===================================================== */}
-
-      <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-5">
+      {/* NAVIGATION */}
+      <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
         {!collapsed && (
-          <p className="px-3 pb-3 pt-3 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
+          <p className="px-2 pb-1 pt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
             Workspace
           </p>
         )}
 
-        <div className="space-y-1.5">
+        <div className="space-y-0.5">
           {workspaceItems.map((item) => {
             const active =
               item.href === "/"
                 ? pathname === "/"
                 : pathname === item.href ||
-                  pathname.startsWith(`${item.href}/`);
+                  pathname.startsWith(
+                    `${item.href}/`
+                  );
 
             return (
               <Link
@@ -333,23 +346,23 @@ export default function Sidebar() {
                     : undefined
                 }
                 className={[
-                  "group flex h-12 rounded-2xl",
-                  "text-sm font-bold transition-all",
+                  "group relative flex h-[34px] items-center",
+                  "rounded-md text-[12px] font-medium",
+                  "transition-colors duration-100",
                   collapsed
-                    ? "justify-center px-2"
-                    : "items-center gap-3 px-3.5",
+                    ? "justify-center"
+                    : "gap-2 px-2",
                   active
-                    ? "bg-amber-500 text-white shadow-[0_10px_22px_rgba(245,158,11,0.24)]"
-                    : "items-center text-slate-700 hover:bg-amber-50 hover:text-slate-900",
+                    ? "bg-amber-500 text-white"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
                 ].join(" ")}
               >
                 <span
                   className={[
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                    "transition-colors",
+                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
                     active
-                      ? "bg-white/15 text-white"
-                      : "bg-slate-50 text-slate-500 group-hover:bg-white group-hover:text-amber-600",
+                      ? "text-white"
+                      : "text-slate-500 group-hover:text-amber-600",
                   ].join(" ")}
                 >
                   <Icon name={item.icon} />
@@ -362,21 +375,22 @@ export default function Sidebar() {
                 )}
 
                 {active && !collapsed && (
-                  <span className="ml-auto h-2.5 w-2.5 rounded-full bg-white" />
+                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white" />
+                )}
+
+                {active && collapsed && (
+                  <span className="absolute right-1 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-amber-500" />
                 )}
               </Link>
             );
           })}
         </div>
 
-        {/* =================================================
-            ADMINISTRATION
-        ================================================= */}
-
+        {/* ADMIN */}
         {isAdmin && (
-          <>
+          <div className="mt-3">
             {!collapsed && (
-              <p className="px-3 pb-3 pt-7 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
+              <p className="px-2 pb-1 pt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
                 Administration
               </p>
             )}
@@ -389,69 +403,57 @@ export default function Sidebar() {
                   : undefined
               }
               className={[
-                "group flex h-12 rounded-2xl",
-                "text-sm font-bold transition-all",
+                "group relative flex h-[34px] items-center",
+                "rounded-md text-[12px] font-medium",
+                "transition-colors duration-100",
                 collapsed
-                  ? "justify-center px-2"
-                  : "items-center gap-3 px-3.5",
+                  ? "justify-center"
+                  : "gap-2 px-2",
                 pathname === "/users" ||
                 pathname.startsWith("/users/")
-                  ? "bg-amber-500 text-white shadow-[0_10px_22px_rgba(245,158,11,0.24)]"
-                  : "items-center text-slate-700 hover:bg-amber-50 hover:text-slate-900",
+                  ? "bg-amber-500 text-white"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
               ].join(" ")}
             >
               <span
                 className={[
-                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
                   pathname === "/users" ||
                   pathname.startsWith("/users/")
-                    ? "bg-white/15 text-white"
-                    : "bg-slate-50 text-slate-500 group-hover:bg-white group-hover:text-amber-600",
+                    ? "text-white"
+                    : "text-slate-500 group-hover:text-amber-600",
                 ].join(" ")}
               >
                 <Icon name="users" />
               </span>
 
               {!collapsed && (
-                <span className="truncate">
-                  User Management
-                </span>
+                <span>User Management</span>
               )}
 
-              {!collapsed &&
-                (pathname === "/users" ||
-                  pathname.startsWith("/users/")) && (
-                  <span className="ml-auto h-2.5 w-2.5 rounded-full bg-white" />
-                )}
+              {(pathname === "/users" ||
+                pathname.startsWith("/users/")) && (
+                <span
+                  className={
+                    collapsed
+                      ? "absolute right-1 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-amber-500"
+                      : "ml-auto h-1.5 w-1.5 rounded-full bg-white"
+                  }
+                />
+              )}
             </Link>
-          </>
+          </div>
         )}
       </nav>
 
-      {/* =====================================================
-          FOOTER
-      ===================================================== */}
-
-      <div className="border-t border-slate-100 p-3">
-        {collapsed ? (
-          <div
-            className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-xs font-black text-slate-500"
-            title="Microsoft CSP - Invoice & transaction management"
-          >
-            MS
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
-            <p className="text-sm font-bold text-slate-700">
-              Microsoft CSP
-            </p>
-
-            <p className="mt-0.5 text-xs text-slate-500">
-              Invoice & transaction management
-            </p>
-          </div>
-        )}
-      </div>
+      {/* FOOTER */}
+      {!collapsed && (
+        <div className="border-t border-slate-100 px-3 py-2">
+          <p className="truncate text-[10px] font-medium text-slate-400">
+            Microsoft CSP · Invoice Management
+          </p>
+        </div>
+      )}
     </aside>
   );
 }

@@ -1,12 +1,95 @@
+
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Option = {
   id: number;
   name: string;
 };
+
+type LineItem = {
+  id: string;
+  productId: string;
+  transactionType: string;
+  distributorId: string;
+  buyPrice: string;
+  sellPrice: string;
+  proratePrice: string;
+  subscriptionStart: string;
+  subscriptionEnd: string;
+  quantity: string;
+  expanded: boolean;
+};
+
+function createLineItem(): LineItem {
+  return {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    productId: "",
+    transactionType: "",
+    distributorId: "",
+    buyPrice: "",
+    sellPrice: "",
+    proratePrice: "",
+    subscriptionStart: "",
+    subscriptionEnd: "",
+    quantity: "1",
+    expanded: true,
+  };
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function calculateProrateDays(
+  start: string,
+  end: string
+): number | null {
+  if (!start || !end) return null;
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+
+  const difference = endDate.getTime() - startDate.getTime();
+
+  const days =
+    Math.floor(difference / (1000 * 60 * 60 * 24)) + 1;
+
+  return days > 0 ? days : null;
+}
+
+function calculateLineRevenue(item: LineItem) {
+  const sellPrice = Number(item.sellPrice || 0);
+  const proratePrice =
+    item.proratePrice === ""
+      ? null
+      : Number(item.proratePrice);
+  const quantity = Number(item.quantity || 0);
+
+  if (
+    proratePrice !== null &&
+    !Number.isNaN(proratePrice) &&
+    proratePrice !== 0
+  ) {
+    return proratePrice * quantity;
+  }
+
+  return sellPrice * quantity;
+}
+
+function calculateLineProfit(item: LineItem) {
+  const buyPrice = Number(item.buyPrice || 0);
+  const sellPrice = Number(item.sellPrice || 0);
+  const quantity = Number(item.quantity || 0);
+
+  return (sellPrice - buyPrice) * quantity;
+}
 
 export default function AddTransactionPage() {
   const router = useRouter();
@@ -19,37 +102,33 @@ export default function AddTransactionPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const [showAddCustomer, setShowAddCustomer] =
-  useState(false);
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState("");
+  const [addingCustomer, setAddingCustomer] = useState(false);
 
-  const [newCustomerName, setNewCustomerName] =
-  useState("");
-
-  const [addingCustomer, setAddingCustomer] =
-  useState(false);
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [newProductName, setNewProductName] = useState("");
+  const [addingProduct, setAddingProduct] = useState(false);
 
   const [form, setForm] = useState({
     customerId: "",
     transactionDate: new Date().toISOString().split("T")[0],
     poNumber: "",
-    transactionType: "",
-    productId: "",
-    buyPrice: "",
-    sellPrice: "",
-    proratePrice: "",
-    subscriptionStart: "",
-    subscriptionEnd: "",
-    quantity: "1",
-    distributorId: "",
     invoiceStatus: "",
     paymentStatus: "",
     remarks: "",
   });
 
+  const [items, setItems] = useState<LineItem[]>([
+    createLineItem(),
+  ]);
+
   useEffect(() => {
     async function loadOptions() {
       try {
-        const response = await fetch("/api/master-data");
+        const response = await fetch("/api/master-data", {
+          cache: "no-store",
+        });
 
         if (!response.ok) {
           throw new Error("Failed to load master data.");
@@ -62,7 +141,11 @@ export default function AddTransactionPage() {
         setDistributors(data.distributors ?? []);
       } catch (err) {
         console.error(err);
-        setError("Unable to load customer/product/distributor data.");
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load form data."
+        );
       } finally {
         setLoadingOptions(false);
       }
@@ -71,7 +154,7 @@ export default function AddTransactionPage() {
     loadOptions();
   }, []);
 
-  function updateField(
+  function updateCommonField(
     field: keyof typeof form,
     value: string
   ) {
@@ -81,65 +164,38 @@ export default function AddTransactionPage() {
     }));
   }
 
-  function calculateRevenue() {
-    const sellPrice = Number(form.sellPrice || 0);
-    const proratePrice =
-      form.proratePrice === ""
-        ? null
-        : Number(form.proratePrice);
-
-    const quantity = Number(form.quantity || 0);
-
-    if (
-      proratePrice !== null &&
-      !Number.isNaN(proratePrice) &&
-      proratePrice !== 0
-    ) {
-      return proratePrice * quantity;
-    }
-
-    return sellPrice * quantity;
+  function updateItem(
+    id: string,
+    field: keyof LineItem,
+    value: string | boolean
+  ) {
+    setItems((current) =>
+      current.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              [field]: value,
+            }
+          : item
+      )
+    );
   }
 
-  function calculateProfit() {
-    const buyPrice = Number(form.buyPrice || 0);
-    const sellPrice = Number(form.sellPrice || 0);
-    const quantity = Number(form.quantity || 0);
-
-    return (sellPrice - buyPrice) * quantity;
+  function addItem() {
+    setItems((current) => [
+      ...current,
+      createLineItem(),
+    ]);
   }
 
-  function calculateMargin() {
-    const buyPrice = Number(form.buyPrice || 0);
-    const sellPrice = Number(form.sellPrice || 0);
+  function removeItem(id: string) {
+    setItems((current) => {
+      if (current.length === 1) {
+        return current;
+      }
 
-    if (!buyPrice) {
-      return 0;
-    }
-
-    return ((sellPrice - buyPrice) / buyPrice) * 100;
-  }
-
-  function calculateProrateDays() {
-    if (
-      !form.subscriptionStart ||
-      !form.subscriptionEnd
-    ) {
-      return null;
-    }
-
-    const start = new Date(form.subscriptionStart);
-    const end = new Date(form.subscriptionEnd);
-
-    const difference =
-      end.getTime() - start.getTime();
-
-    const days =
-      Math.floor(
-        difference / (1000 * 60 * 60 * 24)
-      ) + 1;
-
-    return days > 0 ? days : null;
+      return current.filter((item) => item.id !== id);
+    });
   }
 
   async function handleAddCustomer() {
@@ -159,7 +215,9 @@ export default function AddTransactionPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: customerName }),
+        body: JSON.stringify({
+          name: customerName,
+        }),
       });
 
       const result = await response.json();
@@ -172,17 +230,17 @@ export default function AddTransactionPage() {
 
       const customer = result.customer;
 
-      setCustomers((current) => {
-        if (current.some((item) => item.id === customer.id)) {
-          return current;
-        }
-
-        return [...current, customer].sort((a, b) =>
+      setCustomers((current) =>
+        [...current, customer].sort((a, b) =>
           a.name.localeCompare(b.name)
-        );
-      });
+        )
+      );
 
-      updateField("customerId", String(customer.id));
+      updateCommonField(
+        "customerId",
+        String(customer.id)
+      );
+
       setNewCustomerName("");
       setShowAddCustomer(false);
     } catch (err) {
@@ -197,6 +255,93 @@ export default function AddTransactionPage() {
     }
   }
 
+  async function handleAddProduct() {
+    const productName = newProductName.trim();
+
+    if (!productName) {
+      setError("Please enter the product name.");
+      return;
+    }
+
+    setAddingProduct(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: productName,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Failed to add product."
+        );
+      }
+
+      const product = result.product;
+
+      setProducts((current) =>
+        [...current, product].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        )
+      );
+
+      setItems((current) => {
+        const target = current.find(
+          (item) => item.productId === ""
+        );
+
+        if (!target) {
+          return current;
+        }
+
+        return current.map((item) =>
+          item.id === target.id
+            ? {
+                ...item,
+                productId: String(product.id),
+              }
+            : item
+        );
+      });
+
+      setNewProductName("");
+      setShowAddProduct(false);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to add product."
+      );
+    } finally {
+      setAddingProduct(false);
+    }
+  }
+
+  const totals = useMemo(() => {
+    return items.reduce(
+      (summary, item) => {
+        summary.quantity += Number(item.quantity || 0);
+        summary.revenue += calculateLineRevenue(item);
+        summary.profit += calculateLineProfit(item);
+        return summary;
+      },
+      {
+        quantity: 0,
+        revenue: 0,
+        profit: 0,
+      }
+    );
+  }, [items]);
+
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
@@ -210,32 +355,62 @@ export default function AddTransactionPage() {
         throw new Error("Please select a customer.");
       }
 
-      if (!form.productId) {
+      if (!form.transactionDate) {
+        throw new Error("Please select the Date Loaded.");
+      }
+
+      if (items.length === 0) {
         throw new Error(
-          "Please select a license/product."
+          "Please add at least one license/product."
         );
       }
 
-      if (!form.buyPrice) {
-        throw new Error(
-          "Please enter the Buy Price."
-        );
-      }
+      for (let index = 0; index < items.length; index += 1) {
+        const item = items[index];
+        const row = index + 1;
 
-      if (!form.sellPrice) {
-        throw new Error(
-          "Please enter the Sell Price."
-        );
-      }
+        if (!item.productId) {
+          throw new Error(
+            `Please select a license/product for item ${row}.`
+          );
+        }
 
-      if (!form.quantity) {
-        throw new Error(
-          "Please enter the quantity."
-        );
+        if (!item.buyPrice) {
+          throw new Error(
+            `Please enter the Buy Price for item ${row}.`
+          );
+        }
+
+        if (!item.sellPrice) {
+          throw new Error(
+            `Please enter the Sell Price for item ${row}.`
+          );
+        }
+
+        if (
+          !item.quantity ||
+          Number(item.quantity) < 1 ||
+          !Number.isInteger(Number(item.quantity))
+        ) {
+          throw new Error(
+            `Quantity must be at least 1 for item ${row}.`
+          );
+        }
+
+        if (
+          item.subscriptionStart &&
+          item.subscriptionEnd &&
+          new Date(item.subscriptionEnd) <
+            new Date(item.subscriptionStart)
+        ) {
+          throw new Error(
+            `End Date cannot be before Start Date for item ${row}.`
+          );
+        }
       }
 
       const response = await fetch(
-        "/api/transactions",
+        "/api/transaction-batches",
         {
           method: "POST",
           headers: {
@@ -243,52 +418,36 @@ export default function AddTransactionPage() {
           },
           body: JSON.stringify({
             customerId: Number(form.customerId),
-            productId: Number(form.productId),
-            distributorId:
-              form.distributorId
-                ? Number(form.distributorId)
-                : null,
-
-            transactionDate:
-              form.transactionDate,
-
-            poNumber:
-              form.poNumber || null,
-
-            transactionType:
-              form.transactionType || null,
-
-            buyPrice:
-              Number(form.buyPrice),
-
-            sellPrice:
-              Number(form.sellPrice),
-
-            proratePrice:
-              form.proratePrice
-                ? Number(form.proratePrice)
-                : null,
-
-            subscriptionStart:
-              form.subscriptionStart || null,
-
-            subscriptionEnd:
-              form.subscriptionEnd || null,
-
-            prorateDays:
-              calculateProrateDays(),
-
-            quantity:
-              Number(form.quantity),
-
+            transactionDate: form.transactionDate,
+            poNumber: form.poNumber || null,
             invoiceStatus:
               form.invoiceStatus || null,
-
             paymentStatus:
               form.paymentStatus || null,
-
-            remarks:
-              form.remarks || null,
+            remarks: form.remarks || null,
+            items: items.map((item) => ({
+              productId: Number(item.productId),
+              transactionType:
+                item.transactionType || null,
+              distributorId: item.distributorId
+                ? Number(item.distributorId)
+                : null,
+              buyPrice: Number(item.buyPrice),
+              sellPrice: Number(item.sellPrice),
+              proratePrice:
+                item.proratePrice !== ""
+                  ? Number(item.proratePrice)
+                  : null,
+              subscriptionStart:
+                item.subscriptionStart || null,
+              subscriptionEnd:
+                item.subscriptionEnd || null,
+              prorateDays: calculateProrateDays(
+                item.subscriptionStart,
+                item.subscriptionEnd
+              ),
+              quantity: Number(item.quantity),
+            })),
           }),
         }
       );
@@ -298,7 +457,7 @@ export default function AddTransactionPage() {
       if (!response.ok || !result.success) {
         throw new Error(
           result.message ||
-            "Failed to create transaction."
+            "Failed to create transaction batch."
         );
       }
 
@@ -310,31 +469,23 @@ export default function AddTransactionPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to save transaction."
+          : "Failed to save transactions."
       );
     } finally {
       setSaving(false);
     }
   }
 
-  const revenue = calculateRevenue();
-  const profit = calculateProfit();
-  const margin = calculateMargin();
-  const prorateDays = calculateProrateDays();
-
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* Header */}
-
       <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
               Add Transaction
             </h1>
-
             <p className="mt-1 text-sm text-gray-500">
-              Add a new CSP transaction to the tracker
+              Add one or multiple CSP licenses in a single transaction batch
             </p>
           </div>
 
@@ -348,38 +499,46 @@ export default function AddTransactionPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-[1400px] px-6 py-6">
+      <div className="mx-auto max-w-[1400px] px-6 py-5">
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
             {error}
           </div>
         )}
 
         {loadingOptions ? (
           <div className="rounded-2xl border bg-white p-10 text-center shadow-sm">
-            <p className="text-gray-500">
+            <p className="text-sm text-gray-500">
               Loading form data...
             </p>
           </div>
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="space-y-6"
+            className="space-y-4"
           >
-            {/* Customer / Transaction */}
+            <section className="rounded-2xl border bg-white p-5 shadow-sm">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Transaction Details
+                  </h2>
+                  <p className="mt-1 text-xs text-gray-500">
+                    These details apply to all license items in this batch.
+                  </p>
+                </div>
 
-            <section className="rounded-2xl border bg-white p-6 shadow-sm">
-              <div className="mb-6">
-                <h2 className="text-lg font-bold text-gray-900">
-                  Transaction Details
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Basic customer and transaction information
-                </p>
+                <div className="rounded-lg bg-orange-50 px-3 py-2 text-right">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-orange-600">
+                    License Items
+                  </p>
+                  <p className="text-lg font-bold text-gray-900">
+                    {items.length}
+                  </p>
+                </div>
               </div>
 
-              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div>
                   <div className="mb-2 flex items-center justify-between">
                     <label className="text-sm font-semibold text-gray-700">
@@ -388,8 +547,12 @@ export default function AddTransactionPage() {
 
                     <button
                       type="button"
-                      onClick={() => setShowAddCustomer(!showAddCustomer)}
-                      className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+                      onClick={() =>
+                        setShowAddCustomer(
+                          (current) => !current
+                        )
+                      }
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800"
                     >
                       + Add Customer
                     </button>
@@ -397,50 +560,50 @@ export default function AddTransactionPage() {
 
                   <select
                     value={form.customerId}
-                    onChange={(e) =>
-                      updateField("customerId", e.target.value)
+                    onChange={(event) =>
+                      updateCommonField(
+                        "customerId",
+                        event.target.value
+                      )
                     }
                     className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm"
                   >
-                    <option value="">Select Customer</option>
-
+                    <option value="">
+                      Select Customer
+                    </option>
                     {customers.map((customer) => (
-                      <option key={customer.id} value={customer.id}>
+                      <option
+                        key={customer.id}
+                        value={customer.id}
+                      >
                         {customer.name}
                       </option>
                     ))}
                   </select>
 
                   {showAddCustomer && (
-                    <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
-                      <label className="mb-2 block text-sm font-semibold text-gray-700">
-                        New Customer Name
-                      </label>
-
+                    <div className="mt-2 rounded-xl border border-blue-200 bg-blue-50/40 p-3">
                       <div className="flex gap-2">
                         <input
                           type="text"
                           value={newCustomerName}
-                          onChange={(e) =>
-                            setNewCustomerName(e.target.value)
+                          onChange={(event) =>
+                            setNewCustomerName(
+                              event.target.value
+                            )
                           }
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleAddCustomer();
-                            }
-                          }}
-                          placeholder="Enter customer name"
-                          className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm"
+                          placeholder="Customer name"
+                          className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
                         />
-
                         <button
                           type="button"
                           disabled={addingCustomer}
                           onClick={handleAddCustomer}
-                          className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
                         >
-                          {addingCustomer ? "Adding..." : "Add"}
+                          {addingCustomer
+                            ? "Adding..."
+                            : "Add"}
                         </button>
                       </div>
                     </div>
@@ -451,14 +614,13 @@ export default function AddTransactionPage() {
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
                     Date Loaded *
                   </label>
-
                   <input
                     type="date"
                     value={form.transactionDate}
-                    onChange={(e) =>
-                      updateField(
+                    onChange={(event) =>
+                      updateCommonField(
                         "transactionDate",
-                        e.target.value
+                        event.target.value
                       )
                     }
                     className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
@@ -469,14 +631,13 @@ export default function AddTransactionPage() {
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
                     PO Number
                   </label>
-
                   <input
                     type="text"
                     value={form.poNumber}
-                    onChange={(e) =>
-                      updateField(
+                    onChange={(event) =>
+                      updateCommonField(
                         "poNumber",
-                        e.target.value
+                        event.target.value
                       )
                     }
                     placeholder="Enter PO number"
@@ -486,346 +647,22 @@ export default function AddTransactionPage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Transaction Type
-                  </label>
-
-                  <select
-                    value={form.transactionType}
-                    onChange={(e) =>
-                      updateField(
-                        "transactionType",
-                        e.target.value
-                      )
-                    }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm"
-                  >
-                    <option value="">
-                      Select Type
-                    </option>
-                    <option value="Renewal">
-                      Renewal
-                    </option>
-                    <option value="Prorate">
-                      Prorate
-                    </option>
-                    <option value="Net New">
-                      Net New
-                    </option>
-                    <option value="NA">
-                      NA
-                    </option>
-                    <option value="-">
-                      -
-                    </option>
-                  </select>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    License Description *
-                  </label>
-
-                  <select
-                    value={form.productId}
-                    onChange={(e) =>
-                      updateField(
-                        "productId",
-                        e.target.value
-                      )
-                    }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm"
-                  >
-                    <option value="">
-                      Select License / Product
-                    </option>
-
-                    {products.map((product) => (
-                      <option
-                        key={product.id}
-                        value={product.id}
-                      >
-                        {product.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </section>
-
-            {/* Pricing */}
-
-            <section className="rounded-2xl border bg-white p-6 shadow-sm">
-              <div className="mb-6">
-                <h2 className="text-lg font-bold text-gray-900">
-                  Pricing & Quantity
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Pricing information and automatic calculations
-                </p>
-              </div>
-
-              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Buy Price *
-                  </label>
-
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={form.buyPrice}
-                    onChange={(e) =>
-                      updateField(
-                        "buyPrice",
-                        e.target.value
-                      )
-                    }
-                    placeholder="0.00"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Sell Price *
-                  </label>
-
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={form.sellPrice}
-                    onChange={(e) =>
-                      updateField(
-                        "sellPrice",
-                        e.target.value
-                      )
-                    }
-                    placeholder="0.00"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Prorate Price
-                  </label>
-
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={form.proratePrice}
-                    onChange={(e) =>
-                      updateField(
-                        "proratePrice",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Optional"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Quantity *
-                  </label>
-
-                  <input
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={form.quantity}
-                    onChange={(e) =>
-                      updateField(
-                        "quantity",
-                        e.target.value
-                      )
-                    }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* Calculations */}
-
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <div className="rounded-xl bg-gray-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Total Revenue
-                  </p>
-
-                  <p className="mt-2 text-xl font-bold text-gray-900">
-                    ₹
-                    {revenue.toLocaleString(
-                      "en-IN",
-                      {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }
-                    )}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-gray-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    P/L
-                  </p>
-
-                  <p className="mt-2 text-xl font-bold text-gray-900">
-                    ₹
-                    {profit.toLocaleString(
-                      "en-IN",
-                      {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }
-                    )}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-gray-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Margin
-                  </p>
-
-                  <p className="mt-2 text-xl font-bold text-gray-900">
-                    {margin.toFixed(2)}%
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* Subscription */}
-
-            <section className="rounded-2xl border bg-white p-6 shadow-sm">
-              <div className="mb-6">
-                <h2 className="text-lg font-bold text-gray-900">
-                  Prorate Period
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Enter the subscription period when applicable
-                </p>
-              </div>
-
-              <div className="grid gap-5 md:grid-cols-3">
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Start Date
-                  </label>
-
-                  <input
-                    type="date"
-                    value={form.subscriptionStart}
-                    onChange={(e) =>
-                      updateField(
-                        "subscriptionStart",
-                        e.target.value
-                      )
-                    }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    End Date
-                  </label>
-
-                  <input
-                    type="date"
-                    value={form.subscriptionEnd}
-                    onChange={(e) =>
-                      updateField(
-                        "subscriptionEnd",
-                        e.target.value
-                      )
-                    }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Prorate Days
-                  </label>
-
-                  <div className="rounded-lg border bg-gray-50 px-3 py-2.5 text-sm font-semibold text-gray-700">
-                    {prorateDays ?? "-"}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Invoice / Distributor */}
-
-            <section className="rounded-2xl border bg-white p-6 shadow-sm">
-              <div className="mb-6">
-                <h2 className="text-lg font-bold text-gray-900">
-                  Invoice & Payment
-                </h2>
-              </div>
-
-              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Backend Distributor
-                  </label>
-
-                  <select
-                    value={form.distributorId}
-                    onChange={(e) =>
-                      updateField(
-                        "distributorId",
-                        e.target.value
-                      )
-                    }
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm"
-                  >
-                    <option value="">
-                      Select Distributor
-                    </option>
-
-                    {distributors.map(
-                      (distributor) => (
-                        <option
-                          key={distributor.id}
-                          value={distributor.id}
-                        >
-                          {distributor.name}
-                        </option>
-                      )
-                    )}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
                     Invoice Status
                   </label>
-
                   <select
                     value={form.invoiceStatus}
-                    onChange={(e) =>
-                      updateField(
+                    onChange={(event) =>
+                      updateCommonField(
                         "invoiceStatus",
-                        e.target.value
+                        event.target.value
                       )
                     }
                     className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm"
                   >
-                    <option value="">
-                      Select Status
-                    </option>
-
+                    <option value="">Select Status</option>
                     <option value="Invoice Sent">
                       Invoice Sent
                     </option>
-
                     <option value="Need to send invoice">
                       Need to send invoice
                     </option>
@@ -836,29 +673,19 @@ export default function AddTransactionPage() {
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
                     Payment Received
                   </label>
-
                   <select
                     value={form.paymentStatus}
-                    onChange={(e) =>
-                      updateField(
+                    onChange={(event) =>
+                      updateCommonField(
                         "paymentStatus",
-                        e.target.value
+                        event.target.value
                       )
                     }
                     className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm"
                   >
-                    <option value="">
-                      Select Status
-                    </option>
-
-                    <option value="Yes">
-                      Yes
-                    </option>
-
-                    <option value="No">
-                      No
-                    </option>
-
+                    <option value="">Select Status</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                     <option value="Not Applicable">
                       Not Applicable
                     </option>
@@ -869,14 +696,13 @@ export default function AddTransactionPage() {
                   <label className="mb-2 block text-sm font-semibold text-gray-700">
                     Remarks
                   </label>
-
                   <input
                     type="text"
                     value={form.remarks}
-                    onChange={(e) =>
-                      updateField(
+                    onChange={(event) =>
+                      updateCommonField(
                         "remarks",
-                        e.target.value
+                        event.target.value
                       )
                     }
                     placeholder="Optional remarks"
@@ -886,14 +712,464 @@ export default function AddTransactionPage() {
               </div>
             </section>
 
-            {/* Actions */}
+            <section className="rounded-2xl border bg-white shadow-sm">
+              <div className="flex items-center justify-between border-b px-5 py-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    License / Transaction Items
+                  </h2>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Add multiple licenses with separate pricing, quantity and distributor details.
+                  </p>
+                </div>
 
-            <section className="flex items-center justify-end gap-3 rounded-2xl border bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddProduct(
+                        (current) => !current
+                      );
+                      setError("");
+                    }}
+                    className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-600 hover:bg-orange-100"
+                  >
+                    {showAddProduct
+                      ? "− Close Product"
+                      : "+ Add Product"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={addItem}
+                    className="rounded-lg bg-gray-900 px-3 py-2 text-xs font-bold text-white hover:bg-gray-800"
+                  >
+                    + Add License
+                  </button>
+                </div>
+              </div>
+
+              {showAddProduct && (
+                <div className="border-b border-orange-100 bg-orange-50/40 px-5 py-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newProductName}
+                      onChange={(event) =>
+                        setNewProductName(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Enter product / license name"
+                      className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm"
+                    />
+                    <button
+                      type="button"
+                      disabled={addingProduct}
+                      onClick={handleAddProduct}
+                      className="rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50"
+                    >
+                      {addingProduct
+                        ? "Adding..."
+                        : "Add Product"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddProduct(false);
+                        setNewProductName("");
+                      }}
+                      className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-xs font-bold text-gray-700"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3 p-4">
+                {items.map((item, index) => {
+                  const productName =
+                    products.find(
+                      (product) =>
+                        String(product.id) ===
+                        item.productId
+                    )?.name ?? "Select license / product";
+
+                  const revenue =
+                    calculateLineRevenue(item);
+                  const profit =
+                    calculateLineProfit(item);
+                  const prorateDays =
+                    calculateProrateDays(
+                      item.subscriptionStart,
+                      item.subscriptionEnd
+                    );
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50/60"
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateItem(
+                            item.id,
+                            "expanded",
+                            !item.expanded
+                          )
+                        }
+                        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left hover:bg-gray-100"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
+                            {index + 1}
+                          </span>
+
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-gray-900">
+                              {productName}
+                            </p>
+                            <p className="text-[11px] text-gray-500">
+                              Qty {item.quantity || 0}
+                              {" • "}
+                              Revenue {formatCurrency(revenue)}
+                              {" • "}
+                              P/L {formatCurrency(profit)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <span className="shrink-0 text-xs font-bold text-gray-500">
+                          {item.expanded
+                            ? "▲ Collapse"
+                            : "▼ Details"}
+                        </span>
+                      </button>
+
+                      {item.expanded && (
+                        <div className="border-t border-gray-200 bg-white p-4">
+                          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="lg:col-span-2">
+                              <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                                License / Product *
+                              </label>
+                              <select
+                                value={item.productId}
+                                onChange={(event) =>
+                                  updateItem(
+                                    item.id,
+                                    "productId",
+                                    event.target.value
+                                  )
+                                }
+                                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
+                              >
+                                <option value="">
+                                  Select License / Product
+                                </option>
+                                {products.map(
+                                  (product) => (
+                                    <option
+                                      key={product.id}
+                                      value={product.id}
+                                    >
+                                      {product.name}
+                                    </option>
+                                  )
+                                )}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                                Transaction Type
+                              </label>
+                              <select
+                                value={item.transactionType}
+                                onChange={(event) =>
+                                  updateItem(
+                                    item.id,
+                                    "transactionType",
+                                    event.target.value
+                                  )
+                                }
+                                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
+                              >
+                                <option value="">
+                                  Select Type
+                                </option>
+                                <option value="Renewal">
+                                  Renewal
+                                </option>
+                                <option value="Prorate">
+                                  Prorate
+                                </option>
+                                <option value="Net New">
+                                  Net New
+                                </option>
+                                <option value="NA">NA</option>
+                                <option value="-">-</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                                Distributor
+                              </label>
+                              <select
+                                value={item.distributorId}
+                                onChange={(event) =>
+                                  updateItem(
+                                    item.id,
+                                    "distributorId",
+                                    event.target.value
+                                  )
+                                }
+                                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm"
+                              >
+                                <option value="">
+                                  Select Distributor
+                                </option>
+                                {distributors.map(
+                                  (distributor) => (
+                                    <option
+                                      key={distributor.id}
+                                      value={
+                                        distributor.id
+                                      }
+                                    >
+                                      {distributor.name}
+                                    </option>
+                                  )
+                                )}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                                Buy Price *
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={item.buyPrice}
+                                onChange={(event) =>
+                                  updateItem(
+                                    item.id,
+                                    "buyPrice",
+                                    event.target.value
+                                  )
+                                }
+                                placeholder="0.00"
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                                Sell Price *
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={item.sellPrice}
+                                onChange={(event) =>
+                                  updateItem(
+                                    item.id,
+                                    "sellPrice",
+                                    event.target.value
+                                  )
+                                }
+                                placeholder="0.00"
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                                Prorate Price
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={item.proratePrice}
+                                onChange={(event) =>
+                                  updateItem(
+                                    item.id,
+                                    "proratePrice",
+                                    event.target.value
+                                  )
+                                }
+                                placeholder="Optional"
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                                Quantity *
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                step="1"
+                                value={item.quantity}
+                                onChange={(event) =>
+                                  updateItem(
+                                    item.id,
+                                    "quantity",
+                                    event.target.value
+                                  )
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                                Start Date
+                              </label>
+                              <input
+                                type="date"
+                                value={
+                                  item.subscriptionStart
+                                }
+                                onChange={(event) =>
+                                  updateItem(
+                                    item.id,
+                                    "subscriptionStart",
+                                    event.target.value
+                                  )
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                                End Date
+                              </label>
+                              <input
+                                type="date"
+                                value={
+                                  item.subscriptionEnd
+                                }
+                                onChange={(event) =>
+                                  updateItem(
+                                    item.id,
+                                    "subscriptionEnd",
+                                    event.target.value
+                                  )
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                                Prorate Days
+                              </label>
+                              <div className="rounded-lg border bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700">
+                                {prorateDays ?? "-"}
+                              </div>
+                            </div>
+
+                            <div className="flex items-end justify-end">
+                              <button
+                                type="button"
+                                disabled={items.length === 1}
+                                onClick={() =>
+                                  removeItem(item.id)
+                                }
+                                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                Remove License
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                            <div className="rounded-lg border bg-gray-50 px-3 py-2">
+                              <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                                Revenue
+                              </p>
+                              <p className="mt-1 text-sm font-bold text-gray-900">
+                                {formatCurrency(revenue)}
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border bg-gray-50 px-3 py-2">
+                              <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                                P/L
+                              </p>
+                              <p className="mt-1 text-sm font-bold text-gray-900">
+                                {formatCurrency(profit)}
+                              </p>
+                            </div>
+
+                            <div className="rounded-lg border bg-gray-50 px-3 py-2">
+                              <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                                Margin
+                              </p>
+                              <p className="mt-1 text-sm font-bold text-gray-900">
+                                {Number(item.buyPrice)
+                                  ? (
+                                      ((Number(item.sellPrice) -
+                                        Number(item.buyPrice)) /
+                                        Number(item.buyPrice)) *
+                                      100
+                                    ).toFixed(2)
+                                  : "0.00"}
+                                %
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border bg-white p-4 shadow-sm">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                  Total Quantity
+                </p>
+                <p className="mt-1 text-xl font-bold text-gray-900">
+                  {totals.quantity}
+                </p>
+              </div>
+
+              <div className="rounded-xl border bg-white p-4 shadow-sm">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                  Total Revenue
+                </p>
+                <p className="mt-1 text-xl font-bold text-gray-900">
+                  {formatCurrency(totals.revenue)}
+                </p>
+              </div>
+
+              <div className="rounded-xl border bg-white p-4 shadow-sm">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                  Total P/L
+                </p>
+                <p className="mt-1 text-xl font-bold text-gray-900">
+                  {formatCurrency(totals.profit)}
+                </p>
+              </div>
+            </section>
+
+            <section className="flex items-center justify-end gap-3 rounded-xl border bg-white p-4 shadow-sm">
               <button
                 type="button"
-                onClick={() =>
-                  router.push("/tracker")
-                }
+                onClick={() => router.push("/tracker")}
                 className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
               >
                 Cancel
@@ -906,7 +1182,9 @@ export default function AddTransactionPage() {
               >
                 {saving
                   ? "Saving..."
-                  : "Save Transaction"}
+                  : `Save ${items.length} License${
+                      items.length === 1 ? "" : "s"
+                    }`}
               </button>
             </section>
           </form>

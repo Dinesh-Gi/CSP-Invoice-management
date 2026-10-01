@@ -197,8 +197,8 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white p-8">
-        <div className="flex min-h-[500px] items-center justify-center">
+      <div className="min-h-screen bg-[#f8f7f4] p-4">
+        <div className="flex min-h-[300px] items-center justify-center">
           <div className="text-center">
             <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
 
@@ -213,8 +213,8 @@ export default function DashboardPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-white p-8">
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+      <div className="min-h-screen bg-[#f8f7f4] p-4">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
           <h2 className="text-lg font-bold text-red-800">
             Dashboard Error
           </h2>
@@ -247,31 +247,31 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f7f4]">
-      <div className="mx-auto max-w-[1600px] space-y-6 p-6 lg:p-8">
+      <div className="mx-auto max-w-[1600px] space-y-3 p-3 lg:p-4">
 
         {/* Dashboard Header */}
-        <section className="flex flex-col gap-5 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+        <section className="flex flex-col gap-3 rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-amber-600">
-              <span className="h-2 w-2 rounded-full bg-blue-600" />
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
               CSP Management
             </div>
 
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">
+            <h1 className="mt-1 text-xl font-bold tracking-tight text-gray-950 sm:text-2xl">
               Dashboard Overview
             </h1>
 
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+            <p className="mt-0.5 max-w-2xl text-[11px] text-gray-500">
               Monitor revenue, profitability, invoices, payments and CSP transaction activity.
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+              <p className="text-[9px] font-bold uppercase tracking-wide text-gray-400">
                 Total Quantity
               </p>
-              <p className="mt-1 text-xl font-bold text-gray-900">
+              <p className="mt-0.5 text-lg font-bold text-gray-900">
                 {formatNumber(summary.totalQuantity)}
               </p>
             </div>
@@ -280,49 +280,49 @@ export default function DashboardPage() {
         </section>
 
         {/* KPI Cards */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <section className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
 
           {/* Revenue */}
-          <div className="group rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="group rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm transition hover:shadow-md">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-[11px] font-semibold text-gray-500">
                   Total Revenue
                 </p>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-gray-950">
+                <p className="mt-1 text-2xl font-bold tracking-tight text-gray-950">
                   {formatCurrency(summary.totalRevenue)}
                 </p>
 
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-1 text-[10px] text-gray-500">
                   Based on all transactions
                 </p>
               </div>
 
-              <div className="rounded-xl bg-amber-50 px-3 py-2 text-xl ring-1 ring-amber-100">
+              <div className="rounded-lg bg-amber-50 px-2.5 py-1.5 text-lg ring-1 ring-amber-100">
                 ₹
               </div>
             </div>
           </div>
 
           {/* Profit */}
-          <div className="group rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="group rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm transition hover:shadow-md">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-[11px] font-semibold text-gray-500">
                   Total P/L
                 </p>
 
-                <p className="mt-2 text-3xl font-bold tracking-tight text-gray-950">
+                <p className="mt-1 text-2xl font-bold tracking-tight text-gray-950">
                   {formatCurrency(summary.totalProfit)}
                 </p>
 
-                <p className="mt-2 text-xs text-green-600">
+                <p className="mt-1 text-[10px] text-green-600">
                   Overall gross profit
                 </p>
               </div>
 
-              <div className="rounded-xl bg-green-50 px-3 py-2 text-xl ring-1 ring-green-100">
+              <div className="rounded-lg bg-green-50 px-2.5 py-1.5 text-lg ring-1 ring-green-100">
                 ↗
               </div>
             </div>
@@ -331,23 +331,23 @@ export default function DashboardPage() {
         </section>
 
         {/* Financial Trend + Invoice Status */}
-        <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
 
           {/* Monthly Trend */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm xl:col-span-2">
-            <div className="mb-5 flex items-center justify-between">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm xl:col-span-2">
+            <div className="mb-3 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold tracking-tight text-gray-950">
+                <h2 className="text-[14px] font-bold tracking-tight text-gray-950">
                   Revenue & P/L Trend
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-0.5 text-[10px] text-gray-500">
                   Monthly financial performance
                 </p>
               </div>
             </div>
 
-            <div className="h-[320px]">
+            <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyTrend}>
                   <CartesianGrid
@@ -357,11 +357,11 @@ export default function DashboardPage() {
 
                   <XAxis
                     dataKey="month"
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                   />
 
                   <YAxis
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 10 }}
                     tickFormatter={(value) =>
                       `₹${(value / 100000).toFixed(1)}L`
                     }
@@ -397,18 +397,18 @@ export default function DashboardPage() {
           </div>
 
           {/* Invoice Status */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div className="mb-4">
-              <h2 className="text-lg font-bold tracking-tight text-gray-950">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:shadow-md">
+            <div className="mb-3">
+              <h2 className="text-[14px] font-bold tracking-tight text-gray-950">
                 Invoice Status
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-0.5 text-[10px] text-gray-500">
                 Current invoice position
               </p>
             </div>
 
-            <div className="h-[220px]">
+            <div className="h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -443,7 +443,7 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {invoiceStatuses.map((item, index) => (
                 <div
                   key={item.name}
@@ -465,7 +465,7 @@ export default function DashboardPage() {
                     </span>
                   </div>
 
-                  <span className="ml-3 text-sm font-bold text-gray-900">
+                  <span className="ml-3 text-[11px] font-bold text-gray-900">
                     {item.count}
                   </span>
                 </div>
@@ -476,25 +476,25 @@ export default function DashboardPage() {
 
         {/* Action Required */}
         <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-gray-200 p-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-2 border-b border-gray-200 px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-gray-950">
+              <h2 className="text-[14px] font-bold tracking-tight text-gray-950">
                 Action Required
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-0.5 text-[10px] text-gray-500">
                 Transactions requiring invoice or payment follow-up.
               </p>
             </div>
 
-            <div className="rounded-full bg-orange-50 px-4 py-2 text-sm font-bold text-orange-700 ring-1 ring-orange-100">
+            <div className="rounded-full bg-orange-50 px-3 py-1.5 text-[10px] font-bold text-orange-700 ring-1 ring-orange-100">
               {summary.actionRequiredCount} Pending
             </div>
           </div>
 
           {actionRequired.length === 0 ? (
-            <div className="p-10 text-center">
-              <p className="font-semibold text-green-700">
+            <div className="px-4 py-6 text-center">
+              <p className="text-[12px] font-semibold text-green-700">
                 All transactions are up to date.
               </p>
             </div>
@@ -503,31 +503,31 @@ export default function DashboardPage() {
               <table className="w-full min-w-[1000px]">
                 <thead className="bg-gray-50/80">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Customer
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Product
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Date
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Revenue
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Invoice
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Payment
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Action
                     </th>
                   </tr>
@@ -539,29 +539,29 @@ export default function DashboardPage() {
                       key={item.id}
                       className="transition hover:bg-amber-50/40"
                     >
-                      <td className="px-6 py-4">
-                        <p className="max-w-[220px] truncate text-sm font-semibold text-gray-900">
+                      <td className="px-3 py-2">
+                        <p className="max-w-[220px] truncate text-[11px] font-semibold text-gray-900">
                           {item.customer}
                         </p>
                       </td>
 
-                      <td className="px-6 py-4">
-                        <p className="max-w-[260px] truncate text-sm text-gray-700">
+                      <td className="px-3 py-2">
+                        <p className="max-w-[260px] truncate text-[11px] text-gray-700">
                           {item.product}
                         </p>
                       </td>
 
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
+                      <td className="whitespace-nowrap px-3 py-2 text-[11px] text-gray-600">
                         {formatDate(item.date)}
                       </td>
 
-                      <td className="whitespace-nowrap px-6 py-4 text-sm font-semibold text-gray-900">
+                      <td className="whitespace-nowrap px-3 py-2 text-[11px] font-semibold text-gray-900">
                         {formatCurrency(item.revenue)}
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2">
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(
+                          className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${statusBadge(
                             item.invoiceStatus
                           )}`}
                         >
@@ -569,9 +569,9 @@ export default function DashboardPage() {
                         </span>
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2">
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(
+                          className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${statusBadge(
                             item.paymentStatus
                           )}`}
                         >
@@ -579,10 +579,10 @@ export default function DashboardPage() {
                         </span>
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2">
                         <a
                           href="/tracker"
-                          className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+                          className="text-[11px] font-semibold text-blue-600 hover:text-blue-800"
                         >
                           View
                         </a>
@@ -596,21 +596,21 @@ export default function DashboardPage() {
         </section>
 
         {/* Customer + Product */}
-        <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <section className="grid grid-cols-1 gap-3 xl:grid-cols-2">
 
           {/* Customers */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div className="mb-5">
-              <h2 className="text-lg font-bold tracking-tight text-gray-950">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:shadow-md">
+            <div className="mb-3">
+              <h2 className="text-[14px] font-bold tracking-tight text-gray-950">
                 Top Customers by Revenue
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-0.5 text-[10px] text-gray-500">
                 Highest-value customer accounts
               </p>
             </div>
 
-            <div className="h-[360px]">
+            <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={topCustomers}
@@ -658,18 +658,18 @@ export default function DashboardPage() {
           </div>
 
           {/* Products */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div className="mb-5">
-              <h2 className="text-lg font-bold tracking-tight text-gray-950">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:shadow-md">
+            <div className="mb-3">
+              <h2 className="text-[14px] font-bold tracking-tight text-gray-950">
                 Top Products by Revenue
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-0.5 text-[10px] text-gray-500">
                 Highest-value licenses and services
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {topProducts.map((item, index) => {
                 const maxRevenue =
                   topProducts[0]?.revenue || 1;
@@ -680,16 +680,16 @@ export default function DashboardPage() {
                 return (
                   <div key={item.name}>
                     <div className="mb-1 flex items-center justify-between gap-3">
-                      <p className="max-w-[70%] truncate text-sm font-medium text-gray-800">
+                      <p className="max-w-[70%] truncate text-[11px] font-medium text-gray-800">
                         {index + 1}. {item.name}
                       </p>
 
-                      <p className="whitespace-nowrap text-sm font-bold text-gray-900">
+                      <p className="whitespace-nowrap text-[11px] font-bold text-gray-900">
                         {formatCurrency(item.revenue)}
                       </p>
                     </div>
 
-                    <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
                       <div
                         className="h-full rounded-full bg-amber-500"
                         style={{
@@ -705,37 +705,37 @@ export default function DashboardPage() {
         </section>
 
         {/* Distributor + Transaction Type */}
-        <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <section className="grid grid-cols-1 gap-3 xl:grid-cols-2">
 
           {/* Distributor */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div className="mb-5">
-              <h2 className="text-lg font-bold tracking-tight text-gray-950">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:shadow-md">
+            <div className="mb-3">
+              <h2 className="text-[14px] font-bold tracking-tight text-gray-950">
                 Distributor Performance
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-0.5 text-[10px] text-gray-500">
                 Revenue and transaction distribution
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {revenueByDistributor.map((item) => (
                 <div
                   key={item.name}
-                  className="rounded-xl border border-gray-100 bg-gray-50 p-4"
+                  className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="font-semibold text-gray-900">
+                    <p className="text-[11px] font-semibold text-gray-900">
                       {item.name}
                     </p>
 
-                    <p className="font-bold text-amber-600">
+                    <p className="text-[11px] font-bold text-amber-600">
                       {formatCurrency(item.revenue)}
                     </p>
                   </div>
 
-                  <div className="mt-2 flex gap-5 text-xs text-gray-500">
+                  <div className="mt-1.5 flex gap-4 text-[10px] text-gray-500">
                     <span>
                       Transactions:{" "}
                       <strong className="text-gray-800">
@@ -763,29 +763,29 @@ export default function DashboardPage() {
           </div>
 
           {/* Transaction Type */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div className="mb-5">
-              <h2 className="text-lg font-bold tracking-tight text-gray-950">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:shadow-md">
+            <div className="mb-3">
+              <h2 className="text-[14px] font-bold tracking-tight text-gray-950">
                 Transaction Type
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-0.5 text-[10px] text-gray-500">
                 Net New, Renewal, Prorate and other transactions
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {transactionTypes.map((item) => (
                 <div
                   key={item.name}
-                  className="flex items-center justify-between rounded-xl border border-gray-100 p-4"
+                  className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2.5"
                 >
                   <div>
-                    <p className="font-semibold text-gray-900">
+                    <p className="text-[11px] font-semibold text-gray-900">
                       {item.name}
                     </p>
 
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-0.5 text-[10px] text-gray-500">
                       {item.count} transactions
                     </p>
                   </div>
@@ -795,7 +795,7 @@ export default function DashboardPage() {
                       {formatCurrency(item.revenue)}
                     </p>
 
-                    <p className="mt-1 text-xs font-medium text-green-600">
+                    <p className="mt-0.5 text-[10px] font-medium text-green-600">
                       P/L {formatCurrency(item.profit)}
                     </p>
                   </div>
@@ -806,37 +806,37 @@ export default function DashboardPage() {
         </section>
 
         {/* Payment Status + Recent Transactions */}
-        <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
 
           {/* Payment */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div className="mb-5">
-              <h2 className="text-lg font-bold tracking-tight text-gray-950">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:shadow-md">
+            <div className="mb-3">
+              <h2 className="text-[14px] font-bold tracking-tight text-gray-950">
                 Payment Status
               </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-0.5 text-[10px] text-gray-500">
                 Payment collection overview
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {paymentStatuses.map((item) => (
                 <div
                   key={item.name}
-                  className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0"
+                  className="flex items-center justify-between border-b border-gray-100 pb-2.5 last:border-0"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">
+                    <p className="text-[11px] font-semibold text-gray-800">
                       {item.name}
                     </p>
 
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-0.5 text-[10px] text-gray-500">
                       {item.count} transactions
                     </p>
                   </div>
 
-                  <p className="text-sm font-bold text-gray-900">
+                  <p className="text-[11px] font-bold text-gray-900">
                     {formatCurrency(item.revenue)}
                   </p>
                 </div>
@@ -845,21 +845,21 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Transactions */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm xl:col-span-2">
-            <div className="flex items-center justify-between border-b border-gray-200 p-6">
+          <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm xl:col-span-2">
+            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
               <div>
-                <h2 className="text-lg font-bold tracking-tight text-gray-950">
+                <h2 className="text-[14px] font-bold tracking-tight text-gray-950">
                   Recent Transactions
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-0.5 text-[10px] text-gray-500">
                   Latest entries in the CSP tracker
                 </p>
               </div>
 
               <a
                 href="/tracker"
-                className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800"
               >
                 View All →
               </a>
@@ -869,23 +869,23 @@ export default function DashboardPage() {
               <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50/80">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Customer
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Product
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Type
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Revenue
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-wide text-gray-500">
                       Invoice
                     </th>
                   </tr>
@@ -897,33 +897,33 @@ export default function DashboardPage() {
                       key={item.id}
                       className="transition hover:bg-amber-50/40"
                     >
-                      <td className="px-6 py-4">
-                        <p className="max-w-[180px] truncate text-sm font-semibold text-gray-900">
+                      <td className="px-3 py-2">
+                        <p className="max-w-[180px] truncate text-[11px] font-semibold text-gray-900">
                           {item.customer}
                         </p>
 
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-0.5 text-[10px] text-gray-500">
                           {formatDate(item.date)}
                         </p>
                       </td>
 
-                      <td className="px-6 py-4">
-                        <p className="max-w-[220px] truncate text-sm text-gray-700">
+                      <td className="px-3 py-2">
+                        <p className="max-w-[220px] truncate text-[11px] text-gray-700">
                           {item.product}
                         </p>
                       </td>
 
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-3 py-2 text-[11px] text-gray-600">
                         {item.transactionType || "Not Set"}
                       </td>
 
-                      <td className="px-6 py-4 text-sm font-bold text-gray-900">
+                      <td className="px-3 py-2 text-[11px] font-bold text-gray-900">
                         {formatCurrency(item.revenue)}
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2">
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(
+                          className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${statusBadge(
                             item.invoiceStatus
                           )}`}
                         >
@@ -939,7 +939,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Footer */}
-        <div className="flex flex-col gap-1 border-t border-gray-200 pt-5 pb-2 text-center text-xs text-gray-400 sm:flex-row sm:items-center sm:justify-between sm:text-left">
+        <div className="flex flex-col gap-1 border-t border-gray-200 pt-3 pb-1 text-center text-[9px] text-gray-400 sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <span>ZEIT CSP Tracker</span>
           <span>Data powered by PostgreSQL • CSP transaction calculations</span>
         </div>
