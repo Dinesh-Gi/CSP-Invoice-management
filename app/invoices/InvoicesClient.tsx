@@ -372,15 +372,15 @@ export default function InvoicesPage() {
 
   return (
     <main className="min-h-screen bg-[#f8f7f3] text-slate-950">
-      <div className="mx-auto w-full max-w-[1800px] px-5 py-5 sm:px-6 lg:px-8 xl:px-10">
-        <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mx-auto w-full max-w-[1700px] px-4 py-4 sm:px-6 lg:px-7">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="mb-1.5 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-amber-600">
+            <div className="mb-1.5 flex items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.16em] text-amber-600">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
               Finance / Invoice Desk
             </div>
 
-            <p className="text-sm font-medium text-slate-500">
+            <p className="text-[11px] font-medium text-slate-500">
               {summary.totalInvoices.toLocaleString("en-IN")} invoice records · track sending and payment progress
             </p>
           </div>
@@ -388,14 +388,14 @@ export default function InvoicesPage() {
           <button
             type="button"
             onClick={loadInvoices}
-            className="zeit-btn h-10 bg-[#f59e0b] px-4 text-white shadow-[0_6px_16px_rgba(245,158,11,0.18)] hover:bg-[#d97706] hover:shadow-[0_8px_20px_rgba(245,158,11,0.23)]"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#f59e0b] px-3.5 text-xs font-extrabold text-white shadow-[0_6px_16px_rgba(245,158,11,0.18)] hover:bg-[#d97706] hover:shadow-[0_8px_20px_rgba(245,158,11,0.23)]"
           >
             <RefreshIcon />
             Refresh Data
           </button>
         </div>
 
-        <section className="zeit-metric-strip mb-5">
+        <section className="zeit-metric-strip mb-4">
           <div className="zeit-metric-grid xl:grid-cols-6">
             <KpiCard title="Invoice Value" value={formatCompactCurrency(summary.totalRevenue)} subtitle={`${summary.totalInvoices} records`} icon={<RevenueIcon />} iconClass="bg-amber-50 text-amber-600 ring-1 ring-amber-100 ring-blue-100" />
             <KpiCard title="Invoice Sent" value={invoiceSentCount.toLocaleString("en-IN")} subtitle="Completed" icon={<CheckIcon />} iconClass="bg-emerald-50 text-emerald-600 ring-emerald-100" />
@@ -406,9 +406,9 @@ export default function InvoicesPage() {
           </div>
         </section>
 
-        <section className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
-          <div className="overflow-hidden rounded-2xl border border-amber-200/80 bg-white shadow-[0_8px_26px_rgba(15,23,42,0.045)]">
-            <div className="flex items-center justify-between border-b border-amber-100 bg-[#fffaf0] px-5 py-3.5">
+        <section className="mb-4 grid grid-cols-1 gap-3 xl:grid-cols-[1.5fr_1fr]">
+          <div className="overflow-hidden rounded-xl border border-amber-200/80 bg-white shadow-[0_8px_26px_rgba(15,23,42,0.045)]">
+            <div className="flex items-center justify-between border-b border-amber-100 bg-[#fffaf0] px-4 py-2.5">
               <div>
                 <h2 className="font-bold text-gray-950">Action Required</h2>
                 <p className="mt-1 text-xs text-gray-500">Invoices that are not sent or payments still pending.</p>
@@ -422,17 +422,17 @@ export default function InvoicesPage() {
                 const invoiceState = getInvoiceStatus(invoice.invoiceStatus);
                 const paymentState = getPaymentStatus(invoice.paymentStatus);
                 return (
-                  <div key={invoice.id} className="flex flex-col gap-3 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50">
+                  <div key={invoice.id} className="flex flex-col gap-3 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate text-sm font-bold text-gray-900">{invoice.customer}</p>
+                        <p className="truncate text-xs font-bold text-gray-900">{invoice.customer}</p>
                         <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${invoiceState.className}`}>{invoiceState.label}</span>
                         <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${paymentState.className}`}>{paymentState.label}</span>
                       </div>
                       <p className="mt-1 truncate text-xs text-gray-500">{invoice.product} · PO {invoice.poNumber || "Not Set"}</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-3">
-                      <span className="text-sm font-bold text-gray-900">{formatCurrency(invoice.revenue)}</span>
+                      <span className="text-xs font-bold text-gray-900">{formatCurrency(invoice.revenue)}</span>
                       <button type="button" onClick={() => setSelectedInvoice(invoice)} className="inline-flex h-8 items-center rounded-lg bg-blue-50 px-3 text-xs font-extrabold text-blue-700 ring-1 ring-blue-100 hover:-translate-y-px hover:bg-blue-100">View</button>
                       {canEditTransactions && <a href={`/tracker/${invoice.id}/edit`} className="inline-flex h-8 items-center rounded-lg bg-amber-50 px-3 text-xs font-extrabold text-amber-700 ring-1 ring-amber-100 hover:-translate-y-px hover:bg-amber-100">Update</a>}
                     </div>
@@ -442,7 +442,7 @@ export default function InvoicesPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_26px_rgba(15,23,42,0.045)]">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_26px_rgba(15,23,42,0.045)]">
             <div className="mb-4">
               <h2 className="font-bold text-gray-950">Invoice Workflow</h2>
               <p className="mt-1 text-xs text-gray-500">Quick view of the current billing pipeline.</p>
@@ -457,11 +457,11 @@ export default function InvoicesPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
-          <div className="border-b border-slate-100 px-5 py-3.5 sm:px-6">
+        <section className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-[0_10px_32px_rgba(15,23,42,0.05)]">
+          <div className="border-b border-slate-100 px-4 py-2.5 sm:px-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div>
-                <h2 className="text-lg font-bold tracking-tight">Invoice Register</h2>
+                <h2 className="text-base font-black tracking-tight">Invoice Register</h2>
                 <p className="mt-1 text-sm text-gray-500">Detailed invoice and payment tracking linked to CSP transactions.</p>
               </div>
               <div className="flex items-center gap-3">
@@ -470,10 +470,10 @@ export default function InvoicesPage() {
               </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               <div className="relative xl:col-span-1">
                 <SearchIcon />
-                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Customer, PO, product, distributor..." className="zeit-input h-11 w-full pl-10 pr-4 text-sm" />
+                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Customer, PO, product, distributor..." className="zeit-input h-9 w-full pl-10 pr-4 text-sm" />
               </div>
               <StyledSelect label="Invoice Status" value={invoiceStatus} onChange={setInvoiceStatus} options={["All", ...invoiceStatuses]} />
               <StyledSelect label="Payment Status" value={paymentStatus} onChange={setPaymentStatus} options={["All", ...paymentStatuses]} />
@@ -484,7 +484,7 @@ export default function InvoicesPage() {
 
           {loading ? <LoadingState /> : filteredInvoices.length === 0 ? <EmptyState clearFilters={clearFilters} /> : (
             <div className="overflow-x-auto">
-              <table className="min-w-[1750px] w-full">
+              <table className="min-w-[1550px] w-full">
                 <thead>
                   <tr className="border-b border-slate-200/80 bg-[#fafaf8]">
                     <TableHeader>Date</TableHeader>
@@ -497,7 +497,7 @@ export default function InvoicesPage() {
                     <TableHeader>Invoice Status</TableHeader>
                     <TableHeader>Payment Status</TableHeader>
                     <TableHeader>Remarks</TableHeader>
-                    <th className="sticky right-0 z-20 border-l border-slate-200/80 bg-gray-50 px-5 py-3.5 text-center text-[11px] font-bold uppercase tracking-wide text-gray-500">Action</th>
+                    <th className="sticky right-0 z-20 border-l border-slate-200/80 bg-gray-50 px-4 py-2.5 text-center text-[11px] font-bold uppercase tracking-wide text-gray-500">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -506,16 +506,16 @@ export default function InvoicesPage() {
                     const paymentState = getPaymentStatus(invoice.paymentStatus);
                     return (
                       <tr key={invoice.id} className="group border-b border-slate-100 hover:bg-amber-50/25">
-                        <td className="whitespace-nowrap px-5 py-3.5 text-sm text-gray-600">{formatDate(invoice.date)}</td>
-                        <td className="max-w-[250px] px-5 py-3.5"><p className="truncate text-sm font-bold text-gray-900">{invoice.customer}</p><p className="mt-1 text-xs text-gray-500">PO: {invoice.poNumber || "Not Set"}</p></td>
-                        <td className="max-w-[330px] px-5 py-3.5"><p className="truncate text-sm text-gray-800">{invoice.product}</p><p className="mt-1 truncate text-xs text-gray-500">{invoice.periodLabel || "Subscription period not set"}{invoice.prorateDays ? ` · ${invoice.prorateDays} days` : ""}</p></td>
-                        <td className="px-5 py-3.5 text-sm text-gray-700">{invoice.distributor || "Not Assigned"}</td>
-                        <td className="px-5 py-3.5"><span className="rounded-md bg-gray-100 px-2.5 py-1.5 text-xs font-semibold text-gray-600">{invoice.transactionType || "Not Set"}</span></td>
-                        <td className="whitespace-nowrap px-5 py-3.5 text-right text-sm font-bold">{invoice.quantity.toLocaleString("en-IN")}</td>
-                        <td className="whitespace-nowrap px-5 py-3.5 text-right text-sm font-bold text-blue-700">{formatCurrency(invoice.revenue)}</td>
-                        <td className="whitespace-nowrap px-5 py-3.5"><span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[11px] font-extrabold ring-1 ring-inset ${invoiceState.className}`}><span className={`h-1.5 w-1.5 rounded-full ${invoiceState.dot}`} />{invoiceState.label}</span></td>
-                        <td className="whitespace-nowrap px-5 py-3.5"><span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ring-1 ring-inset ${paymentState.className}`}>{paymentState.label}</span></td>
-                        <td className="max-w-[250px] px-5 py-3.5"><p title={invoice.remarks || ""} className="truncate text-sm text-gray-500">{invoice.remarks || "—"}</p></td>
+                        <td className="whitespace-nowrap px-4 py-2.5 text-sm text-gray-600">{formatDate(invoice.date)}</td>
+                        <td className="max-w-[250px] px-4 py-2.5"><p className="truncate text-xs font-bold text-gray-900">{invoice.customer}</p><p className="mt-1 text-xs text-gray-500">PO: {invoice.poNumber || "Not Set"}</p></td>
+                        <td className="max-w-[330px] px-4 py-2.5"><p className="truncate text-sm text-gray-800">{invoice.product}</p><p className="mt-1 truncate text-xs text-gray-500">{invoice.periodLabel || "Subscription period not set"}{invoice.prorateDays ? ` · ${invoice.prorateDays} days` : ""}</p></td>
+                        <td className="px-4 py-2.5 text-sm text-gray-700">{invoice.distributor || "Not Assigned"}</td>
+                        <td className="px-4 py-2.5"><span className="rounded-md bg-gray-100 px-2.5 py-1.5 text-xs font-semibold text-gray-600">{invoice.transactionType || "Not Set"}</span></td>
+                        <td className="whitespace-nowrap px-4 py-2.5 text-right text-xs font-bold">{invoice.quantity.toLocaleString("en-IN")}</td>
+                        <td className="whitespace-nowrap px-4 py-2.5 text-right text-xs font-bold text-blue-700">{formatCurrency(invoice.revenue)}</td>
+                        <td className="whitespace-nowrap px-4 py-2.5"><span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[11px] font-extrabold ring-1 ring-inset ${invoiceState.className}`}><span className={`h-1.5 w-1.5 rounded-full ${invoiceState.dot}`} />{invoiceState.label}</span></td>
+                        <td className="whitespace-nowrap px-4 py-2.5"><span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ring-1 ring-inset ${paymentState.className}`}>{paymentState.label}</span></td>
+                        <td className="max-w-[250px] px-4 py-2.5"><p title={invoice.remarks || ""} className="truncate text-sm text-gray-500">{invoice.remarks || "—"}</p></td>
                         <td className="sticky right-0 z-10 border-l border-slate-100 bg-white px-4 py-3.5 text-center shadow-[-8px_0_12px_-12px_rgba(15,23,42,0.25)] group-hover:bg-amber-50/60">
                           <div className="flex justify-center gap-2">
                             <button type="button" onClick={() => setSelectedInvoice(invoice)} className="inline-flex h-8 items-center rounded-lg bg-blue-50 px-3 text-xs font-extrabold text-blue-700 ring-1 ring-blue-100 hover:-translate-y-px hover:bg-blue-100">View</button>
@@ -530,7 +530,7 @@ export default function InvoicesPage() {
             </div>
           )}
 
-          {!loading && filteredInvoices.length > 0 && <div className="flex flex-col gap-2 border-t border-slate-200/80 bg-gray-50/50 px-5 py-3.5 text-xs text-gray-500 sm:flex-row sm:justify-between"><span>Showing <strong className="text-gray-700">{filteredInvoices.length}</strong> of <strong className="text-gray-700">{invoices.length}</strong> records</span><span>Invoice data is synchronized with CSP Tracker transactions.</span></div>}
+          {!loading && filteredInvoices.length > 0 && <div className="flex flex-col gap-2 border-t border-slate-200/80 bg-gray-50/50 px-4 py-2.5 text-xs text-gray-500 sm:flex-row sm:justify-between"><span>Showing <strong className="text-gray-700">{filteredInvoices.length}</strong> of <strong className="text-gray-700">{invoices.length}</strong> records</span><span>Invoice data is synchronized with CSP Tracker transactions.</span></div>}
         </section>
       </div>
 
@@ -618,7 +618,7 @@ function StyledSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="zeit-input h-11 w-full px-3 text-sm"
+        className="zeit-input h-9 w-full px-3 text-sm"
       >
         <option value="All">All</option>
 
@@ -641,7 +641,7 @@ function TableHeader({
 }) {
   return (
     <th
-      className={`whitespace-nowrap px-5 py-3.5 text-${align} text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500`}
+      className={`whitespace-nowrap px-4 py-2.5 text-${align} text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500`}
     >
       {children}
     </th>
@@ -650,10 +650,10 @@ function TableHeader({
 
 function LoadingState() {
   return (
-    <div className="flex min-h-[420px] flex-col items-center justify-center">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200/80 border-t-blue-600" />
+    <div className="flex min-h-[280px] flex-col items-center justify-center">
+      <div className="h-6 w-6 animate-spin rounded-full border-4 border-slate-200/80 border-t-blue-600" />
 
-      <p className="mt-4 text-sm font-semibold text-gray-500">
+      <p className="mt-2 text-xs font-semibold text-gray-500">
         Loading invoice records...
       </p>
     </div>
@@ -662,23 +662,23 @@ function LoadingState() {
 
 function EmptyState({ clearFilters }: { clearFilters: () => void }) {
   return (
-    <div className="flex min-h-[420px] flex-col items-center justify-center px-6 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 text-gray-400">
+    <div className="flex min-h-[280px] flex-col items-center justify-center px-6 text-center">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 text-gray-400">
         <DocumentIcon />
       </div>
 
-      <h3 className="mt-5 text-base font-bold text-gray-900">
+      <h3 className="mt-3 text-sm font-black text-gray-900">
         No invoice records found
       </h3>
 
-      <p className="mt-2 max-w-md text-sm leading-6 text-gray-500">
+      <p className="mt-1 max-w-md text-[11px] leading-5 text-gray-500">
         No transactions match the current search or filter selection.
       </p>
 
       <button
         type="button"
         onClick={clearFilters}
-        className="mt-5 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700"
+        className="mt-3 rounded-lg bg-blue-600 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-blue-700"
       >
         Clear Filters
       </button>
@@ -719,11 +719,11 @@ function InvoiceModal({
       onClick={onClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]"
+        className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]"
         onClick={(event) => event.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-start justify-between border-b border-slate-200/80 px-5 py-5 sm:px-7">
+        <div className="flex items-start justify-between border-b border-slate-200/80 px-4 py-4 sm:px-5">
           <div className="min-w-0">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -756,9 +756,9 @@ function InvoiceModal({
         </div>
 
         {/* Modal Body */}
-        <div className="max-h-[calc(92vh-145px)] overflow-y-auto p-5 sm:p-7">
+        <div className="max-h-[calc(92vh-145px)] overflow-y-auto p-4 sm:p-5">
           {/* Status Banner */}
-          <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-[#fffaf0] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-4 flex flex-col gap-4 rounded-xl border border-slate-200/80 bg-[#fffaf0] p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-gray-400">
                 Invoice Status
@@ -788,7 +788,7 @@ function InvoiceModal({
           </div>
 
           {/* Main Information */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <DetailCard label="Customer" value={invoice.customer} />
 
             <DetailCard label="Product" value={invoice.product} />
@@ -872,7 +872,7 @@ function InvoiceModal({
           </div>
 
           {/* Remarks */}
-          <div className="mt-5">
+          <div className="mt-3">
             <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-400">
               Remarks
             </p>
@@ -884,11 +884,11 @@ function InvoiceModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="flex flex-col-reverse gap-3 border-t border-slate-200/80 bg-gray-50/70 px-5 py-3.5 sm:flex-row sm:justify-end sm:px-7">
+        <div className="flex flex-col-reverse gap-3 border-t border-slate-200/80 bg-gray-50/70 px-4 py-2.5 sm:flex-row sm:justify-end sm:px-7">
           <button
             type="button"
             onClick={onClose}
-            className="h-11 rounded-xl border border-gray-300 bg-white px-5 text-sm font-bold text-gray-600 transition hover:bg-slate-50"
+            className="h-9 rounded-xl border border-gray-300 bg-white px-5 text-xs font-bold text-gray-600 transition hover:bg-slate-50"
           >
             Close
           </button>
@@ -896,7 +896,7 @@ function InvoiceModal({
           {canEditTransactions && (
             <a
               href={`/tracker/${invoice.id}/edit`}
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md"
+              className="inline-flex h-9 items-center justify-center rounded-xl bg-blue-600 px-5 text-xs font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md"
             >
               Edit Transaction
             </a>
@@ -917,12 +917,12 @@ function DetailCard({
   valueClass?: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200/80 bg-gray-50/60 p-4 transition hover:border-gray-300 hover:bg-white">
+    <div className="rounded-xl border border-slate-200/80 bg-gray-50/60 p-3 transition hover:border-gray-300 hover:bg-white">
       <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">
         {label}
       </p>
 
-      <p className={`mt-2 break-words text-sm font-bold ${valueClass}`}>
+      <p className={`mt-2 break-words text-xs font-bold ${valueClass}`}>
         {value}
       </p>
     </div>

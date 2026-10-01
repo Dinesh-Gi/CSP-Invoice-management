@@ -430,23 +430,23 @@ export default function ReportsPage() {
   ].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] px-4 py-6 text-gray-950 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1800px]">
+    <div className="min-h-screen bg-[#f8f7f4] px-3 py-2.5 text-gray-950 sm:px-5 lg:px-7">
+      <div className="mx-auto max-w-[1700px]">
         {/* Header */}
-        <div className="mb-7 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-amber-600">
+            <div className="mb-1.5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-amber-600">
               <span className="h-2 w-2 rounded-full bg-blue-600" />
               Analytics
               <span className="text-gray-300">/</span>
               Reports
             </div>
 
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            <h1 className="text-xl font-black tracking-tight sm:text-2xl">
               Business Reports
             </h1>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-gray-500">
               Analyze CSP transactions, revenue, profitability, customers,
               distributors and invoice activity.
             </p>
@@ -458,7 +458,7 @@ export default function ReportsPage() {
                 type="button"
                 onClick={generatePDF}
                 disabled={!report || loading}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <DocumentIcon />
                 Generate PDF
@@ -469,7 +469,7 @@ export default function ReportsPage() {
               type="button"
               onClick={() => loadReport()}
               disabled={loading}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <RefreshIcon />
               Refresh Report
@@ -478,21 +478,21 @@ export default function ReportsPage() {
         </div>
 
         {/* Filters */}
-        <div className="mb-7 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
-          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-4 rounded-xl border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(15,23,42,0.05)]">
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-base font-bold">
+              <h2 className="text-sm font-black">
                 Report Filters
               </h2>
 
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-0.5 text-[10px] text-gray-500">
                 Select the reporting period and business dimensions.
               </p>
             </div>
 
             <div className="flex items-center gap-3">
               {activeFilterCount > 0 && (
-                <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">
+                <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
                   {activeFilterCount} filter
                   {activeFilterCount === 1 ? "" : "s"} active
                 </span>
@@ -508,7 +508,7 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <FilterField label="From Date">
               <input
                 type="date"
@@ -594,11 +594,11 @@ export default function ReportsPage() {
             </FilterField>
           </div>
 
-          <div className="mt-4 flex justify-end">
+          <div className="mt-3 flex justify-end">
             <button
               type="button"
               onClick={applyFilters}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-bold text-white transition hover:bg-blue-700"
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white transition hover:bg-blue-700"
             >
               <FilterIcon />
               Apply Filters
@@ -613,7 +613,7 @@ export default function ReportsPage() {
         ) : (
           <>
             {/* Summary */}
-            <div className="mb-7 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+            <div className="mb-4 grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
               <MetricCard
                 title="Transactions"
                 value={report.summary.transactionCount.toLocaleString(
@@ -664,7 +664,7 @@ export default function ReportsPage() {
             </div>
 
             {/* Analytics Grid */}
-            <div className="mb-7 grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <div className="mb-7 grid grid-cols-1 gap-3 xl:grid-cols-2">
               {/* Customer Report */}
               <ReportCard
                 title="Customer Performance"
@@ -673,28 +673,28 @@ export default function ReportsPage() {
                 {topCustomers.length === 0 ? (
                   <EmptyMini />
                 ) : (
-                  <div className="space-y-5">
+                  <div className="space-y-3">
                     {topCustomers.map((item, index) => {
                       const percentage =
                         (item.revenue / maxCustomerRevenue) * 100;
 
                       return (
                         <div key={item.customer}>
-                          <div className="mb-2 flex items-center justify-between gap-4">
+                          <div className="mb-1.5 flex items-center justify-between gap-4">
                             <div className="flex min-w-0 items-center gap-3">
                               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-xs font-bold text-gray-500">
                                 {index + 1}
                               </span>
 
                               <span
-                                className="truncate text-sm font-bold text-gray-800"
+                                className="truncate text-xs font-bold text-gray-800"
                                 title={item.customer}
                               >
                                 {item.customer}
                               </span>
                             </div>
 
-                            <span className="shrink-0 text-sm font-bold text-slate-900">
+                            <span className="shrink-0 text-xs font-bold text-slate-900">
                               {formatCompactCurrency(item.revenue)}
                             </span>
                           </div>
@@ -708,7 +708,7 @@ export default function ReportsPage() {
                             />
                           </div>
 
-                          <div className="ml-10 mt-1.5 flex justify-between text-[11px] text-gray-400">
+                          <div className="ml-10 mt-1 flex justify-between text-[11px] text-gray-400">
                             <span>
                               {item.transactionCount} transactions
                             </span>
@@ -732,28 +732,28 @@ export default function ReportsPage() {
                 {topDistributors.length === 0 ? (
                   <EmptyMini />
                 ) : (
-                  <div className="space-y-5">
+                  <div className="space-y-3">
                     {topDistributors.map((item, index) => {
                       const percentage =
                         (item.revenue / maxDistributorRevenue) * 100;
 
                       return (
                         <div key={item.distributor}>
-                          <div className="mb-2 flex items-center justify-between gap-4">
+                          <div className="mb-1.5 flex items-center justify-between gap-4">
                             <div className="flex min-w-0 items-center gap-3">
                               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-xs font-bold text-gray-500">
                                 {index + 1}
                               </span>
 
                               <span
-                                className="truncate text-sm font-bold text-gray-800"
+                                className="truncate text-xs font-bold text-gray-800"
                                 title={item.distributor}
                               >
                                 {item.distributor}
                               </span>
                             </div>
 
-                            <span className="shrink-0 text-sm font-bold text-slate-900">
+                            <span className="shrink-0 text-xs font-bold text-slate-900">
                               {formatCompactCurrency(item.revenue)}
                             </span>
                           </div>
@@ -767,7 +767,7 @@ export default function ReportsPage() {
                             />
                           </div>
 
-                          <div className="ml-10 mt-1.5 flex justify-between text-[11px] text-gray-400">
+                          <div className="ml-10 mt-1 flex justify-between text-[11px] text-gray-400">
                             <span>
                               {item.transactionCount} transactions
                             </span>
@@ -785,7 +785,7 @@ export default function ReportsPage() {
             </div>
 
             {/* Summary Tables */}
-            <div className="mb-7 grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <div className="mb-7 grid grid-cols-1 gap-3 xl:grid-cols-2">
               {/* Invoice Status */}
               <ReportCard
                 title="Invoice Status"
@@ -816,22 +816,22 @@ export default function ReportsPage() {
                           key={item.invoiceStatus}
                           className="border-b border-gray-50"
                         >
-                          <td className="px-2 py-3 text-sm font-semibold text-gray-700">
+                          <td className="px-2 py-3 text-xs font-semibold text-gray-700">
                             <span className="inline-flex items-center gap-2">
                               <span className="h-2 w-2 rounded-full bg-blue-500" />
                               {item.invoiceStatus}
                             </span>
                           </td>
 
-                          <td className="px-2 py-3 text-right text-sm font-bold text-gray-800">
+                          <td className="px-2 py-3 text-right text-xs font-bold text-gray-800">
                             {item.transactionCount}
                           </td>
 
-                          <td className="px-2 py-3 text-right text-sm font-semibold text-gray-800">
+                          <td className="px-2 py-3 text-right text-xs font-semibold text-gray-800">
                             {formatCurrency(item.revenue)}
                           </td>
 
-                          <td className="px-2 py-3 text-right text-sm font-semibold text-emerald-600">
+                          <td className="px-2 py-3 text-right text-xs font-semibold text-emerald-600">
                             {formatCurrency(item.profit)}
                           </td>
                         </tr>
@@ -871,19 +871,19 @@ export default function ReportsPage() {
                           key={item.transactionType}
                           className="border-b border-gray-50"
                         >
-                          <td className="px-2 py-3 text-sm font-semibold text-gray-700">
+                          <td className="px-2 py-3 text-xs font-semibold text-gray-700">
                             {item.transactionType}
                           </td>
 
-                          <td className="px-2 py-3 text-right text-sm font-bold text-gray-800">
+                          <td className="px-2 py-3 text-right text-xs font-bold text-gray-800">
                             {item.transactionCount}
                           </td>
 
-                          <td className="px-2 py-3 text-right text-sm font-semibold text-gray-800">
+                          <td className="px-2 py-3 text-right text-xs font-semibold text-gray-800">
                             {formatCurrency(item.revenue)}
                           </td>
 
-                          <td className="px-2 py-3 text-right text-sm font-semibold text-emerald-600">
+                          <td className="px-2 py-3 text-right text-xs font-semibold text-emerald-600">
                             {formatCurrency(item.profit)}
                           </td>
                         </tr>
@@ -895,13 +895,13 @@ export default function ReportsPage() {
             </div>
 
             {/* Date Summary */}
-            <div className="mb-7 rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
-                <h2 className="text-lg font-bold">
+            <div className="mb-4 rounded-xl border border-gray-200 bg-white shadow-sm">
+              <div className="border-b border-slate-100 px-4 py-3 sm:px-5">
+                <h2 className="text-base font-black">
                   Date-wise Summary
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-0.5 text-[11px] text-gray-500">
                   Daily transaction, revenue and profitability summary.
                 </p>
               </div>
@@ -942,27 +942,27 @@ export default function ReportsPage() {
                         key={item.date}
                         className="border-b border-slate-100 transition hover:bg-blue-50/30"
                       >
-                        <td className="px-5 py-3.5 text-sm font-semibold text-gray-800">
+                        <td className="px-4 py-2.5 text-xs font-semibold text-gray-800">
                           {formatDate(item.date)}
                         </td>
 
-                        <td className="px-5 py-3.5 text-right text-sm font-semibold text-gray-700">
+                        <td className="px-4 py-2.5 text-right text-xs font-semibold text-gray-700">
                           {item.transactionCount}
                         </td>
 
-                        <td className="px-5 py-3.5 text-right text-sm font-semibold text-gray-700">
+                        <td className="px-4 py-2.5 text-right text-xs font-semibold text-gray-700">
                           {item.quantity.toLocaleString("en-IN")}
                         </td>
 
-                        <td className="px-5 py-3.5 text-right text-sm font-bold text-slate-900">
+                        <td className="px-4 py-2.5 text-right text-xs font-bold text-slate-900">
                           {formatCurrency(item.revenue)}
                         </td>
 
-                        <td className="px-5 py-3.5 text-right text-sm font-bold text-emerald-600">
+                        <td className="px-4 py-2.5 text-right text-xs font-bold text-emerald-600">
                           {formatCurrency(item.profit)}
                         </td>
 
-                        <td className="px-5 py-3.5 text-right text-sm font-bold text-blue-600">
+                        <td className="px-4 py-2.5 text-right text-xs font-bold text-blue-600">
                           {item.margin.toFixed(2)}%
                         </td>
                       </tr>
@@ -973,14 +973,14 @@ export default function ReportsPage() {
             </div>
 
             {/* Detailed Report */}
-            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+              <div className="flex flex-col gap-4 border-b border-slate-100 px-4 py-3 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <h2 className="text-lg font-bold">
+                  <h2 className="text-base font-black">
                     Detailed Transaction Report
                   </h2>
 
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-0.5 text-[11px] text-gray-500">
                     Complete transaction-level information included in
                     this report.
                   </p>
@@ -992,54 +992,54 @@ export default function ReportsPage() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="min-w-[1600px] w-full">
+                <table className="min-w-[1450px] w-full">
                   <thead>
                     <tr className="border-b border-slate-100 bg-[#fafaf8]/70">
-                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Date
                       </th>
 
-                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Customer
                       </th>
 
-                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Product
                       </th>
 
-                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         PO Number
                       </th>
 
-                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Distributor
                       </th>
 
-                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Type
                       </th>
 
-                      <th className="px-4 py-4 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Qty
                       </th>
 
-                      <th className="px-4 py-4 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Revenue
                       </th>
 
-                      <th className="px-4 py-4 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         P/L
                       </th>
 
-                      <th className="px-4 py-4 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-right text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Margin
                       </th>
 
-                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Invoice
                       </th>
 
-                      <th className="px-4 py-4 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
+                      <th className="px-3 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500">
                         Payment
                       </th>
                     </tr>
@@ -1051,61 +1051,61 @@ export default function ReportsPage() {
                         key={item.id}
                         className="border-b border-slate-100 transition hover:bg-blue-50/30"
                       >
-                        <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-600">
+                        <td className="whitespace-nowrap px-3 py-2.5 text-xs text-gray-600">
                           {formatDate(item.date)}
                         </td>
 
-                        <td className="max-w-[220px] px-4 py-4">
+                        <td className="max-w-[220px] px-3 py-2.5">
                           <div
-                            className="truncate text-sm font-bold text-slate-900"
+                            className="truncate text-xs font-bold text-slate-900"
                             title={item.customer}
                           >
                             {item.customer}
                           </div>
                         </td>
 
-                        <td className="max-w-[260px] px-4 py-4">
+                        <td className="max-w-[260px] px-3 py-2.5">
                           <div
-                            className="truncate text-sm text-gray-700"
+                            className="truncate text-xs text-gray-700"
                             title={item.product}
                           >
                             {item.product}
                           </div>
                         </td>
 
-                        <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-600">
+                        <td className="whitespace-nowrap px-3 py-2.5 text-xs text-gray-600">
                           {item.poNumber || "—"}
                         </td>
 
-                        <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-700">
+                        <td className="whitespace-nowrap px-3 py-2.5 text-xs text-gray-700">
                           {item.distributor || "—"}
                         </td>
 
-                        <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-700">
+                        <td className="whitespace-nowrap px-3 py-2.5 text-xs text-gray-700">
                           {item.transactionType || "—"}
                         </td>
 
-                        <td className="px-4 py-4 text-right text-sm font-bold text-gray-800">
+                        <td className="px-3 py-2.5 text-right text-xs font-bold text-gray-800">
                           {item.quantity.toLocaleString("en-IN")}
                         </td>
 
-                        <td className="px-4 py-4 text-right text-sm font-bold text-slate-900">
+                        <td className="px-3 py-2.5 text-right text-xs font-bold text-slate-900">
                           {formatCurrency(item.revenue)}
                         </td>
 
-                        <td className="px-4 py-4 text-right text-sm font-bold text-emerald-600">
+                        <td className="px-3 py-2.5 text-right text-xs font-bold text-emerald-600">
                           {formatCurrency(item.profit)}
                         </td>
 
-                        <td className="px-4 py-4 text-right text-sm font-bold text-blue-600">
+                        <td className="px-3 py-2.5 text-right text-xs font-bold text-blue-600">
                           {item.margin.toFixed(2)}%
                         </td>
 
-                        <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-700">
+                        <td className="whitespace-nowrap px-3 py-2.5 text-xs text-gray-700">
                           {item.invoiceStatus || "Not Set"}
                         </td>
 
-                        <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-700">
+                        <td className="whitespace-nowrap px-3 py-2.5 text-xs text-gray-700">
                           {item.paymentStatus || "Not Set"}
                         </td>
                       </tr>
@@ -1120,13 +1120,13 @@ export default function ReportsPage() {
 
       <style jsx>{`
         .report-input {
-          height: 44px;
+          height: 36px;
           width: 100%;
-          border-radius: 12px;
+          border-radius: 8px;
           border: 1px solid #e5e7eb;
           background: #f9fafb;
           padding: 0 12px;
-          font-size: 14px;
+          font-size: 12px;
           font-weight: 500;
           color: #374151;
           outline: none;
@@ -1190,11 +1190,11 @@ function ReportCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_8px_28px_rgba(15,23,42,0.05)] sm:p-6">
-      <div className="mb-6">
-        <h2 className="text-lg font-bold text-gray-950">{title}</h2>
+    <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(15,23,42,0.05)] sm:p-4">
+      <div className="mb-4">
+        <h2 className="text-base font-black text-gray-950">{title}</h2>
 
-        <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+        <p className="mt-0.5 text-[11px] text-gray-500">{subtitle}</p>
       </div>
 
       {children}
@@ -1230,10 +1230,10 @@ function EmptyMini() {
 
 function LoadingState() {
   return (
-    <div className="flex min-h-[500px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div className="flex min-h-[320px] flex-col items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm">
       <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
 
-      <p className="mt-4 text-sm font-semibold text-gray-500">
+      <p className="mt-4 text-xs font-semibold text-gray-500">
         Generating report...
       </p>
     </div>
@@ -1242,12 +1242,12 @@ function LoadingState() {
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white text-center shadow-sm">
+    <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white text-center shadow-sm">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-500">
         <AlertIcon />
       </div>
 
-      <h2 className="mt-4 text-lg font-bold text-gray-900">
+      <h2 className="mt-4 text-base font-black text-gray-900">
         Unable to generate report
       </h2>
 
@@ -1258,7 +1258,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#f59e0b] px-4 text-sm font-extrabold text-white shadow-[0_6px_16px_rgba(245,158,11,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#d97706] hover:shadow-[0_8px_20px_rgba(245,158,11,0.23)] hover:bg-blue-700"
+        className="mt-3 inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#f59e0b] px-3.5 text-xs font-extrabold text-white shadow-[0_6px_16px_rgba(245,158,11,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#d97706] hover:shadow-[0_8px_20px_rgba(245,158,11,0.23)]"
       >
         Try Again
       </button>
